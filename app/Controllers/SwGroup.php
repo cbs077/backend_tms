@@ -1,51 +1,77 @@
 <?php namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
-use App\Models\UserModel;
-//use App\Dao\UserModel;
+use App\Models\SwGroupModel;
 
 
-class User extends ResourceController
+class SwGroup extends ResourceController
 {
     use ResponseTrait;
 
-    public function getLoginCK($id = false){
-      log_message('info','user_index'); 
-      $model = new UserModel();
-      $data = $model->getUserInfo($id);
+    public function getSwGroupMgList(){
+      log_message('info','getSwGroupMgList'); 
+      $request = service('request');
+      $searchData = $request->getGet(); // OR $this->request->getGet();
+  
+      $search = "";
+      if (isset($searchData) && isset($searchData['search'])) {
+        $search = $searchData['search'];
+      }
+  
+      // Get data 
+      $model = new SwGroupModel();
+  
+      if ($search == '') {
+        $paginateData = $model->paginate(2);
+      } else {
+        $paginateData = $model->select('*');
+        $paginateData = $paginateData->orLike('VAN_ID', $search);  			
+        $paginateData = $paginateData->paginate(2);
+      }
+
+      $data = [
+        'data' => $paginateData,
+        'currentPage' =>  $model->pager->getCurrentPage('default'),
+        'totalPages' =>  $model->pager->getPageCount('default'),
+        'search' => $search
+      ];
+  
       return $this->respond($data);
     }
 
-    public function getUserInfo($id = false){
-      log_message('info','user_index'); 
-      $model = new UserModel();
-      $data = $model->getUserInfo($id);
+    public function getSwGroupMg($van_id = false, $group_id = false){
+      log_message('info','getSwGroupMg'); 
+      $model = new SwGroupModel();
+      $data = $model->getSwGroupMg($van_id, $group_id);
+      return $this->respond($data);
+    }
+
+    public function getSwGroupIdCheck($van_id = false, $group_id = false){
+      log_message('info','getSwGroupIdCheck'); 
+      $model = new SwGroupModel();
+      $data = $model->getSwGroupIdCheck($van_id, $group_id);
       return $this->respond($data);
     }
 
     // create
-    public function insertUserMg() {
-        log_message('info','user_create'); 
-        $model = new UserModel();
+    public function insertSwGroupMg() {
+        log_message('info','swgroup_create'); 
+        $model = new SwGroupModel();
         $data = [
-            'USER_ID' => $this->request->getVar('USER_ID'),
-            'USER_NM'  => $this->request->getVar('USER_NM'),
-            'COMP_ID'  => $this->request->getVar('COMP_ID'),
-            'PWD'  => password_hash($this->request->getVar('PWD'), PASSWORD_BCRYPT),//$this->request->getVar('PWD'),
-            'USER_RIGHTS'  => $this->request->getVar('USER_RIGHTS'),
+            'VAN_ID' => $this->request->getVar('VAN_ID'),
+            'SW_GROUP_ID'  => $this->request->getVar('SW_GROUP_ID'),
+            'SW_GROUP_NM'  => $this->request->getVar('SW_GROUP_NM'),
+            'DESCRIPTION'  => $this->request->getVar('DESCRIPTION'),
             'REG_DT'  => $this->request->getVar('REG_DT'),
             'REG_USER'  => $this->request->getVar('REG_USER'),
-            'UPDATE_DT'  => $this->request->getVar('UPDATE_DT'),
+            'UPDATE_DT'  => $this->request->getVar('UPDATE_DT')
         ];
-        $result = $model->insert($data);
-        //ERROR - 2022-02-04 14:24:35 --> Duplicate entry 'cbs2351' for key 'PRIMARY'
-        //에러 처리 필요.
-        //log_message('info',$result); 
+        $model->insert($data);
         $response = [
-          'status'   => 201,
+          'status'   => 200,
           'error'    => null,
           'messages' => [
-              'success' => 'User created successfully'
+              'success' => 'SwGroup created successfully'
           ]
       ];
       return $this->respondCreated($response);

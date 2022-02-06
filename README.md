@@ -63,3 +63,4 @@ Additionally, make sure that the following extensions are enabled in your PHP:
 - xml (enabled by default - don't turn it off)
 
 php spark serve
+php spark serve --host 0.0.0.0 --port 8081

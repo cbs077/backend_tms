@@ -1,51 +1,82 @@
 <?php namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
-use App\Models\UserModel;
-//use App\Dao\UserModel;
+use App\Models\VanModel;
 
-
-class User extends ResourceController
+class Van extends ResourceController
 {
     use ResponseTrait;
 
-    public function getLoginCK($id = false){
-      log_message('info','user_index'); 
-      $model = new UserModel();
-      $data = $model->getUserInfo($id);
+    public function getVanMgList(){
+      log_message('info','getVanMgList'); 
+      $request = service('request');
+      $searchData = $request->getGet(); // OR $this->request->getGet();
+  
+      $search = "";
+      if (isset($searchData) && isset($searchData['search'])) {
+        $search = $searchData['search'];
+      }
+  
+      // Get data 
+      $model = new VanModel();
+  
+      if ($search == '') {
+        $paginateData = $model->paginate(2);
+      } else {
+        $paginateData = $model->select('*')
+          ->orLike('VAN_ID', $search)
+          //->orLike('email', $search)    			
+          ->paginate(2);
+      }
+
+      $data = [
+        'users' => $paginateData,
+        'currentPage' =>  $model->pager->getCurrentPage('default'),
+        'totalPages' =>  $model->pager->getPageCount('default'),
+        'search' => $search
+      ];
+  
       return $this->respond($data);
     }
 
-    public function getUserInfo($id = false){
-      log_message('info','user_index'); 
-      $model = new UserModel();
-      $data = $model->getUserInfo($id);
+    public function getVanMg($id = false){
+      log_message('info','getVanMg'); 
+      $model = new VanModel();
+      $data = $model->getVanMg($id);
+      return $this->respond($data);
+    }
+
+    public function getVanIdCheck($id = false){
+      log_message('info','getVanMg'); 
+      $model = new VanModel();
+      $data = $model->getVanIdCheck($id);
       return $this->respond($data);
     }
 
     // create
-    public function insertUserMg() {
-        log_message('info','user_create'); 
-        $model = new UserModel();
+    public function insertVanMg() {
+        log_message('info','van_create'); 
+        $model = new VanModel();
+        //VAN_ID, VAN_NM, MANAGER_NM, PHONE, FAX, ZIP_CODE, ADDR1, ADDR2, REG_DT, REG_USER, UPDATE_DT
         $data = [
-            'USER_ID' => $this->request->getVar('USER_ID'),
-            'USER_NM'  => $this->request->getVar('USER_NM'),
-            'COMP_ID'  => $this->request->getVar('COMP_ID'),
-            'PWD'  => password_hash($this->request->getVar('PWD'), PASSWORD_BCRYPT),//$this->request->getVar('PWD'),
-            'USER_RIGHTS'  => $this->request->getVar('USER_RIGHTS'),
+            'VAN_ID' => $this->request->getVar('VAN_ID'),
+            'VAN_NM'  => $this->request->getVar('VAN_NM'),
+            'MANAGER_NM'  => $this->request->getVar('MANAGER_NM'),
+            'PHONE'  => $this->request->getVar('PHONE'),
+            'FAX'  => $this->request->getVar('FAX'),
+            'ZIP_CODE'  => $this->request->getVar('ZIP_CODE'),
+            'ADDR1'  => $this->request->getVar('ADDR1'),
+            'ADDR2'  => $this->request->getVar('ADDR2'),
             'REG_DT'  => $this->request->getVar('REG_DT'),
             'REG_USER'  => $this->request->getVar('REG_USER'),
             'UPDATE_DT'  => $this->request->getVar('UPDATE_DT'),
         ];
-        $result = $model->insert($data);
-        //ERROR - 2022-02-04 14:24:35 --> Duplicate entry 'cbs2351' for key 'PRIMARY'
-        //에러 처리 필요.
-        //log_message('info',$result); 
+        $model->insert($data);
         $response = [
-          'status'   => 201,
+          'status'   => 200,
           'error'    => null,
           'messages' => [
-              'success' => 'User created successfully'
+              'success' => 'Van created successfully'
           ]
       ];
       return $this->respondCreated($response);
