@@ -46,6 +46,13 @@ class Van extends ResourceController
       return $this->respond($data);
     }
 
+    public function getVanMgInfo($id = false){
+      log_message('info','getVanMgInfo'); 
+      $model = new VanModel();
+      $data = $model->findall();
+      return $this->respond($data);
+    }
+
     public function getVanIdCheck($id = false){
       log_message('info','getVanMg'); 
       $model = new VanModel();
@@ -82,53 +89,40 @@ class Van extends ResourceController
       return $this->respondCreated($response);
     }
 
-    // single user
-    // public function show($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->first();
-    //     if($data){
-    //         return $this->respond($data);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+    // update
+    public function updateVanMg($id = null){
+      log_message('info','updateVanMg'); 
+      $model = new VanModel();
+      $session = session();
+      $van_id = $session->get('van_id');
 
-    // // update
-    // public function update($id = null){
-    //     $model = new UserModel();
-    //     $id = $this->request->getVar('id');
-    //     $data = [
-    //         'name' => $this->request->getVar('name'),
-    //         'email'  => $this->request->getVar('email'),
-    //     ];
-    //     $model->update($id, $data);
-    //     $response = [
-    //       'status'   => 200,
-    //       'error'    => null,
-    //       'messages' => [
-    //           'success' => 'User updated successfully'
-    //       ]
-    //   ];
-    //   return $this->respond($response);
-    // }
+      $cat_model_nm = $this->request->getVar('VAN_NM');
+      $manager_nm = $this->request->getVar('MANAGER_NM');
+      $phone = $this->request->getVar('PHONE');
+      $fax = $this->request->getVar('FAX');
+      $zip_code = $this->request->getVar('ZIP_CODE');
+      $addr1 = $this->request->getVar('ADDR1');
+      $addr2 = $this->request->getVar('ADDR2');
+      $update_dt = $this->request->getVar('UPDATE_DT');
 
-    // // delete
-    // public function delete($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->delete($id);
-    //     if($data){
-    //         $model->delete($id);
-    //         $response = [
-    //             'status'   => 200,
-    //             'error'    => null,
-    //             'messages' => [
-    //                 'success' => 'User successfully deleted'
-    //             ]
-    //         ];
-    //         return $this->respondDeleted($response);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+      log_message('info', json_encode($cat_model_nm)); 
+      $model = $model->set("VAN_NM", $cat_model_nm);
+      $model = $model->set("MANAGER_NM", $manager_nm);
+      $model = $model->set("PHONE", $phone);
+      $model = $model->set("FAX", $fax);
+      $model = $model->set("ZIP_CODE", $zip_code);
+      $model = $model->set("ADDR1", $addr1);
+      $model = $model->set("ADDR2", $addr2);
+      $model = $model->set("UPDATE_DT", $update_dt);
+      $model->where("van_id", $van_id)->update();
 
+      $response = [
+        'status'   => 200,
+        'error'    => null,
+        'messages' => [
+            'success' => 'VanModel updated successfully'
+        ]
+      ];
+      return $this->respond($response);
+    }
 }

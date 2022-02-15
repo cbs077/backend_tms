@@ -13,37 +13,50 @@ class SwOprMg extends ResourceController
       $request = service('request');
       $searchData = $request->getGet(); 
   
+      $page = "1";
+      if (isset($searchData) && isset($searchData['page'])) {
+        $page = $searchData['page'];
+      }
+
       $van_id = "";
       if (isset($searchData) && isset($searchData['van_id'])) {
         $van_id = $searchData['van_id'];
       }
 
       $sw_group_id = "";
-      if (isset($sw_group_id) && isset($searchData['sw_group_id'])) {
+      if (isset($searchData) && isset($searchData['sw_group_id'])) {
         $sw_group_id = $searchData['sw_group_id'];
       }
   
       $sw_version = "";
-      if (isset($sw_version) && isset($searchData['sw_version'])) {
+      if (isset($searchData) && isset($searchData['sw_version'])) {
         $sw_version = $searchData['sw_version'];
       }
 
       $model = new SwOprMgModel();
-      $data = $model->getSwOprMgList($van_id, $sw_group_id, $sw_version);
+      $data = $model->getSwOprMgList($page, 20, $van_id, $sw_group_id, $sw_version);
       return $this->respond($data);
     }
 
-    public function getSwGroupMg($van_id = false, $group_id = false){
-      log_message('info','getSwGroupMg'); 
-      $model = new SwGroupModel();
-      $data = $model->getSwGroupMg($van_id, $group_id);
+    public function getSwOprMg($van_id = false, $sw_group_id = false, $sw_version = false){
+      log_message('info','getSwOprMg'); 
+      $model = new SwOprMgModel();
+      $data = $model->getSwOprMg($van_id, $sw_group_id, $sw_version);
       return $this->respond($data);
     }
 
-    public function getSwGroupIdCheck($van_id = false, $group_id = false){
-      log_message('info','getSwGroupIdCheck'); 
-      $model = new SwGroupModel();
-      $data = $model->getSwGroupIdCheck($van_id, $group_id);
+    public function deleteSwOprMg($van_id = false, $sw_group_id = false, $sw_version = false){
+      log_message('info','deleteSwOprMg'); 
+      $model = new SwOprMgModel();
+      $data['post'] = $model->where('van_id', $van_id)->where('sw_group_id', $sw_group_id)->where('sw_version', $sw_version)->delete();
+      //$data = $model->deleteSwOprMg($van_id, $sw_group_id, $sw_version);
+      return $this->respond($data);
+    }
+
+    public function getSwIdCheck($van_id = false, $sw_group_id = false, $sw_version = false){
+      log_message('info','getSwIdCheck'); 
+      $model = new SwOprMgModel();
+      $data = $model->getSwIdCheck($van_id, $sw_group_id, $sw_version);
       return $this->respond($data);
     }
 

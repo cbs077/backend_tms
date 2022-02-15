@@ -257,7 +257,8 @@ class App extends BaseConfig
      *
      * @deprecated use Config\Cookie::$domain property instead.
      */
-    public $cookieDomain = '';
+    //public $cookieDomain = 'http://35.175.160.167:8080';
+    public $cookieDomain = '.tms-test-server.p-e.kr';
 
     /**
      * --------------------------------------------------------------------------

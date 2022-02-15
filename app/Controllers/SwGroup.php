@@ -11,36 +11,49 @@ class SwGroup extends ResourceController
     public function getSwGroupMgList(){
       log_message('info','getSwGroupMgList'); 
       $request = service('request');
-      $searchData = $request->getGet(); // OR $this->request->getGet();
-  
-      $search = "";
-      if (isset($searchData) && isset($searchData['search'])) {
-        $search = $searchData['search'];
+      $searchData = $request->getGet();
+
+      $page = "1";
+      if (isset($searchData) && isset($searchData['page'])) {
+        $page = $searchData['page'];
+      }
+
+      $page_count = 20;
+      if (isset($searchData) && isset($searchData['page_count'])) {
+        $page_count = (int)$searchData['page_count'];
+      }
+
+      $sw_group_id = "";
+      if (isset($searchData) && isset($searchData['sw_group_id'])) {
+        $sw_group_id = $searchData['sw_group_id'];
+      }
+
+      $sw_group_nm = "";
+      if (isset($searchData) && isset($searchData['sw_group_nm'])) {
+        $sw_group_nm = $searchData['sw_group_nm'];
       }
   
       // Get data 
       $model = new SwGroupModel();
-  
-      if ($search == '') {
-        $paginateData = $model->paginate(2);
-      } else {
-        $paginateData = $model->select('*');
-        $paginateData = $paginateData->orLike('VAN_ID', $search);  			
-        $paginateData = $paginateData->paginate(2);
-      }
-
-      $data = [
-        'data' => $paginateData,
-        'currentPage' =>  $model->pager->getCurrentPage('default'),
-        'totalPages' =>  $model->pager->getPageCount('default'),
-        'search' => $search
-      ];
-  
-      return $this->respond($data);
+      $data = $model->getSwGroupMgList($page ,$page_count ,$sw_group_id, $sw_group_nm);
+      return $this->respond($data);  
     }
 
     public function getSwGroupMg($van_id = false, $group_id = false){
       log_message('info','getSwGroupMg'); 
+
+      $request = service('request');
+      $searchData = $request->getGet(); 
+
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = (string)$searchData['van_id'];
+      }
+
+      $group_id = "";
+      if (isset($searchData) && isset($searchData['group_id'])) {
+        $group_id = $searchData['group_id'];
+      }   
       $model = new SwGroupModel();
       $data = $model->getSwGroupMg($van_id, $group_id);
       return $this->respond($data);
@@ -77,53 +90,53 @@ class SwGroup extends ResourceController
       return $this->respondCreated($response);
     }
 
-    // single user
-    // public function show($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->first();
-    //     if($data){
-    //         return $this->respond($data);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+    // update
+    public function updateSwGroupMg($sw_group_id = false){
+      log_message('info','updateSwGroupMg'); 
+      $model = new SwGroupModel();
+      $session = session();
+      $van_id = $session->get('van_id');
 
-    // // update
-    // public function update($id = null){
-    //     $model = new UserModel();
-    //     $id = $this->request->getVar('id');
-    //     $data = [
-    //         'name' => $this->request->getVar('name'),
-    //         'email'  => $this->request->getVar('email'),
-    //     ];
-    //     $model->update($id, $data);
-    //     $response = [
-    //       'status'   => 200,
-    //       'error'    => null,
-    //       'messages' => [
-    //           'success' => 'User updated successfully'
-    //       ]
-    //   ];
-    //   return $this->respond($response);
-    // }
+      $sw_group_nm = $this->request->getVar('SW_GROUP_NM');
+      $description = $this->request->getVar('DESCRIPTION');
 
-    // // delete
-    // public function delete($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->delete($id);
-    //     if($data){
-    //         $model->delete($id);
-    //         $response = [
-    //             'status'   => 200,
-    //             'error'    => null,
-    //             'messages' => [
-    //                 'success' => 'User successfully deleted'
-    //             ]
-    //         ];
-    //         return $this->respondDeleted($response);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+      log_message('info','swgroup_create:'.$van_id.":".$sw_group_id.":".$sw_group_nm.":".$description);   
+      $res = $model->updateSwGroupMg($van_id, $sw_group_id, $sw_group_nm, $description);
+      $response = [
+          'status'   => 200,
+          'error'    => null,
+          'messages' => [
+              'success' => 'User updated successfully',
+              'res' => $res
+          ]
+      ];
+      return $this->respond($response);
+    }
 
+    // delete
+    public function deleteTerminal($id = null){
+      log_message('info','deleteTerminal'); 
+      $model = new SwGroupModel();       
+      $session = session();
+      $van_id = $session->get('van_id');
+
+      $sw_group_id = $this->request->getVar('SW_GROUP_ID');
+
+      $data = $model->where('van_id', $van_id)->where('sw_group_id', $sw_group_id)->find();
+      log_message('info',"SwGroupModel".json_encode($data)); 
+      if($data){
+          $res = $model->deleteSwGroupMg($van_id, $sw_group_id);
+
+          $response = [
+              'status'   => 200,
+              'error'    => null,
+              'messages' => [
+                  'success' => 'SwGroupModel successfully deleted'
+              ]
+          ];
+          return $this->respondDeleted($response);
+      }else{
+          return $this->failNotFound('No SwGroupModel found');
+      }
+  }
 }

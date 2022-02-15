@@ -17,7 +17,16 @@ class Terminal extends ResourceController
       $request = service('request');
       $searchData = $request->getGet(); // OR $this->request->getGet();
   
-      //log_message('info',$searchData['sw_group_id']); 
+      $page = "1";
+      if (isset($searchData) && isset($searchData['page'])) {
+        $page = $searchData['page'];
+      }
+
+      $page_count = 20;
+      if (isset($searchData) && isset($searchData['page_count'])) {
+        $page_count = (int)$searchData['page_count'];
+      }
+
       $sw_group_id = "";
       if (isset($searchData) && isset($searchData['sw_group_id'])) {
         $sw_group_id = $searchData['sw_group_id'];
@@ -35,31 +44,8 @@ class Terminal extends ResourceController
   
       // Get data 
       $model = new TerminalModel();
-  
-      if ($sw_group_id == '' && $sw_version == '' && $cat_serial_no == '') {
-        $paginateData = $model->paginate(2);
-      } else {
-        $paginateData = $model->select('*');
-        if ( $sw_group_id != ""){
-          $paginateData = $paginateData->Where('sw_group_id', $sw_group_id); 
-        } 
-        if ( $sw_version != ""){
-          $paginateData = $paginateData->Where('sw_version', $sw_version); 
-        } 
-        if ( $cat_serial_no != ""){
-          $paginateData = $paginateData->Where('cat_serial_no', $cat_serial_no); 
-        } 
-	
-        $paginateData = $paginateData->paginate(2);
-
-        $data = [
-          'data' => $paginateData,
-          'currentPage' =>  $model->pager->getCurrentPage('default'),
-          'totalPages' =>  $model->pager->getPageCount('default'),
-        ];
-    
-        return $this->respond($data);
-      }
+      $data = $model->getTerminalList($page ,$page_count ,$sw_group_id, $sw_version, $cat_serial_no);
+      return $this->respond($data); 
     }
 
     public function getTerminal($van_id = false, $serial_no  = false){
@@ -90,11 +76,6 @@ class Terminal extends ResourceController
             'STATUS'  => $this->request->getVar('STATUS'),
             'REG_DT'  => $this->request->getVar('REG_DT'),
             'REG_USER'  => $this->request->getVar('REG_USER'),
-            'FIRST_USE_DT'  => $this->request->getVar('FIRST_USE_DT'),
-            'LAST_USE_DT'  => $this->request->getVar('LAST_USE_DT'),
-            'BUSS_REG_NO'  => $this->request->getVar('BUSS_REG_NO'),
-            'JOINS_NM'  => $this->request->getVar('JOINS_NM'),
-            'JOINS_ADDR'  => $this->request->getVar('JOINS_ADDR'),
         ];
         $model->insert($data);
         $response = [
@@ -107,53 +88,58 @@ class Terminal extends ResourceController
       return $this->respondCreated($response);
     }
 
-    // single user
-    // public function show($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->first();
-    //     if($data){
-    //         return $this->respond($data);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+    // update
+    public function updateTerminal($id = null){
+        log_message('info','updateTerminal'); 
+        $model = new TerminalModel();
+        $session = session();
+        $user_id = $session->get('user_id');
+        $van_id = $session->get('van_id');
 
-    // // update
-    // public function update($id = null){
-    //     $model = new UserModel();
-    //     $id = $this->request->getVar('id');
-    //     $data = [
-    //         'name' => $this->request->getVar('name'),
-    //         'email'  => $this->request->getVar('email'),
-    //     ];
-    //     $model->update($id, $data);
-    //     $response = [
-    //       'status'   => 200,
-    //       'error'    => null,
-    //       'messages' => [
-    //           'success' => 'User updated successfully'
-    //       ]
-    //   ];
-    //   return $this->respond($response);
-    // }
+        $cat_serial_no = $this->request->getVar('CAT_SERIAL_NO');
+        $cat_model_id = $this->request->getVar('CAT_MODEL_ID');
+        $sw_group_id = $this->request->getVar('SW_GROUP_ID');
+        $status = $this->request->getVar('STATUS');
+        if (!isset($status)) {
+          $status = "";
+        }
 
-    // // delete
-    // public function delete($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->delete($id);
-    //     if($data){
-    //         $model->delete($id);
-    //         $response = [
-    //             'status'   => 200,
-    //             'error'    => null,
-    //             'messages' => [
-    //                 'success' => 'User successfully deleted'
-    //             ]
-    //         ];
-    //         return $this->respondDeleted($response);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+        log_message('info',"updateTerminal".json_encode($status)); 
+        $model->updateTerminal($van_id, $cat_serial_no, $cat_model_id, $sw_group_id, $status);
+        $response = [
+          'status'   => 200,
+          'error'    => null,
+          'messages' => [
+              'success' => 'User updated successfully'
+          ]
+      ];
+      return $this->respond($response);
+    }
+
+    // delete
+    public function deleteTerminal($id = null){
+        $model = new TerminalModel();       $session = session();
+        $user_id = $session->get('user_id');
+        $van_id = $session->get('van_id');
+
+        $cat_serial_no = $this->request->getVar('CAT_SERIAL_NO');
+
+        $data = $model->where('van_id', $van_id)->where('cat_serial_no', $cat_serial_no)->find();
+
+        if($data){
+            $res = $model->deleteTerminal($van_id, $cat_serial_no);
+            log_message('info',"deleteTerminal".json_encode($res)); 
+            $response = [
+                'status'   => 200,
+                'error'    => null,
+                'messages' => [
+                    'success' => 'TerminalModel successfully deleted'
+                ]
+            ];
+            return $this->respondDeleted($response);
+        }else{
+            return $this->failNotFound('No User found');
+        }
+    }
 
 }

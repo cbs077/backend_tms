@@ -9,12 +9,52 @@ class User extends ResourceController
 {
     use ResponseTrait;
 
-    public function getLoginCK($id = false){
-      log_message('info','user_index'); 
+    public function getUserMgList(){
+      log_message('info','getUserMgList'); 
+      $request = service('request');
+      $searchData = $request->getGet(); 
+  
+      $page = "1";
+      if (isset($searchData) && isset($searchData['page'])) {
+        $page = $searchData['page'];
+      }
+
+      $page_count = 20;
+      if (isset($searchData) && isset($searchData['page_count'])) {
+        $page_count = (int)$searchData['page_count'];
+      }
+
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = $searchData['van_id'];
+      }
+
+      $user_id = "";
+      if (isset($searchData) && isset($searchData['user_id'])) {
+        $user_id = $searchData['user_id'];
+      }
+  
+      $user_nm = "";
+      if (isset($searchData) && isset($searchData['user_nm'])) {
+        $user_nm = $searchData['user_nm'];
+      }
+
       $model = new UserModel();
-      $data = $model->getUserInfo($id);
+      $data = $model->getSwOprMgList($page, $page_count, $van_id, $user_id, $user_nm);
       return $this->respond($data);
     }
+
+
+    public function getUserIdCheck($id = false){
+      log_message('info','getUserIdCheck'); 
+      $model = new UserModel();
+      $session = session();
+      $user_id = $session->get('user_id');
+
+      $data = $model->where('USER_ID', $user_id)->find();
+      return $this->respond($data);
+    }
+
 
     public function getUserInfo($id = false){
       log_message('info','user_index'); 
@@ -51,53 +91,42 @@ class User extends ResourceController
       return $this->respondCreated($response);
     }
 
-    // single user
-    // public function show($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->first();
-    //     if($data){
-    //         return $this->respond($data);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+    public function updatePwd($id = false){
+      log_message('info','updatePwd'); 
+      $model = new UserModel();
 
-    // // update
-    // public function update($id = null){
-    //     $model = new UserModel();
-    //     $id = $this->request->getVar('id');
-    //     $data = [
-    //         'name' => $this->request->getVar('name'),
-    //         'email'  => $this->request->getVar('email'),
-    //     ];
-    //     $model->update($id, $data);
-    //     $response = [
-    //       'status'   => 200,
-    //       'error'    => null,
-    //       'messages' => [
-    //           'success' => 'User updated successfully'
-    //       ]
-    //   ];
-    //   return $this->respond($response);
-    // }
+      $user_id = $this->request->getVar('user_id');
+      $pwd = $this->request->getVar('pwd');
 
-    // // delete
-    // public function delete($id = null){
-    //     $model = new UserModel();
-    //     $data = $model->where('id', $id)->delete($id);
-    //     if($data){
-    //         $model->delete($id);
-    //         $response = [
-    //             'status'   => 200,
-    //             'error'    => null,
-    //             'messages' => [
-    //                 'success' => 'User successfully deleted'
-    //             ]
-    //         ];
-    //         return $this->respondDeleted($response);
-    //     }else{
-    //         return $this->failNotFound('No User found');
-    //     }
-    // }
+      $data = $model->set("PWD", password_hash($pwd ,PASSWORD_DEFAULT))->where("user_id", $user_id)->update();
+      return $this->respond($data);
+    }
 
+    public function updateUserInfo(){
+        $model = new UserModel();
+        $session = session();
+        $user_id = $session->get('user_id');
+        $van_id = $session->get('van_id');
+
+        $data = [
+          'USER_NM'  => $this->request->getVar('USER_NM'),
+          'PHONE'  => $this->request->getVar('phone'),
+          'PWD'  => password_hash($this->request->getVar('PWD'), PASSWORD_BCRYPT),
+          'FAX'  => $this->request->getVar('fax'),
+          'ZIP_CODE'  => $this->request->getVar('zip_code'),
+          'ADDR1'  => $this->request->getVar('addr1'),
+          'ADDR2'  => $this->request->getVar('addr2'),
+         ];
+        log_message('info', json_encode($user_id)); 
+        log_message('info', json_encode($data)); 
+        $model->update($user_id, $data);
+        $response = [
+          'status'   => 200,
+          'error'    => null,
+          'messages' => [
+              'success' => 'User updated successfully'
+          ]
+      ];
+      return $this->respond($response);
+    }
 }

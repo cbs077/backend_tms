@@ -51,3 +51,4 @@ class Cors implements FilterInterface
         //
     }
 }
+

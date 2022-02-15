@@ -39,22 +39,17 @@ class Home extends BaseController
 
             $userModel->save($data);
             log_message('info','signup_success'); 
-            //return redirect()->to('/signin');
         }else{
             $data['validation'] = $this->validator;
             log_message('info','signup_fail'); 
-            //echo view('signup', $data);
         }        
     }
 
     public function loginAuth()
     {
         $session = session();
-
         $userModel = new UserModel();
-
         $user_id = $this->request->getVar('user_id');
-
         $password = $this->request->getVar('password');
 
         log_message('info', $user_id); 
@@ -64,33 +59,35 @@ class Home extends BaseController
         if($data){
             $pass = $data['PWD'];
             log_message('info', $password);
-            log_message('info', $data['PWD']);
-            //$password  = password_hash($password, PASSWORD_DEFAULT);
-            //$hash = '$2y$07$BCryptRequires22Chrcte/VlQH0piJtjXl.0t1XkA8pw9dMXTpOq';
+            log_message('info', "PWD:".$data['PWD']);
 
             $authenticatePassword = password_verify($password, $pass);
-            log_message('info', $authenticatePassword);
+            
             if($authenticatePassword){
-                $ses_data = [
-                    'id' => $data['USER_ID'],
-                    'name' => $data['PWD'],
-                    'isLoggedIn' => TRUE
-                ];
 
+                $ses_data = [
+                    'user_id' => $data['USER_ID'],
+                    'user_name' => $data['USER_NM'],
+                    'van_id' => $data['COMP_ID'],
+                    'isLoggedIn' => 'true'
+                ];
+                $res = ["user_id" => $data['USER_ID'], "van_id" => $data['COMP_ID']];
+
+                log_message('debug', json_encode($res)); 
+                log_message('debug', json_encode($ses_data)); 
                 $session->set($ses_data);
+
                 $response = [
                     'status'   => 200,
                     'error'    => null,
                     'messages' => [
-                        'success' => 'loginAuth successfully'
+                        'success' => 'loginAuth successfully',
+                        'info' => $res
                     ]
                   ];
-                return $this->respondCreated($response);
-                //return redirect()->to('/profile');
-            
+                return $this->respondCreated($response);            
             }else{
                 $session->setFlashdata('msg', 'Password is incorrect.');
-                //return redirect()->to('/signin');
                 $response = [
                     'status'   => 405,
                     'error'    => null,
@@ -106,6 +103,31 @@ class Home extends BaseController
             $session->setFlashdata('msg', 'Email does not exist.');
             return redirect()->to('/signin');
         }
+    }
+
+    public function logout()
+    {
+        $session = session();
+        $ses_data = [
+            'isLoggedIn' => 'false'
+        ];
+        $session->set($ses_data);
+        log_message('info', "logout");
+        // $session->remove('id');
+        // $session->remove('name');
+        // $session->remove('name');
+
+        $val = $session->get('isLoggedIn');
+        log_message('info', "logout.session:".$val); 
+
+        $response = [
+            'status'   => 405,
+            'error'    => null,
+            'messages' => [
+                'success' => 'logout'
+            ]
+          ];
+        return $this->respondCreated($response);
     }
 
     public function upload()

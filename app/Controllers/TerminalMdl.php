@@ -12,6 +12,16 @@ class TerminalMdl extends ResourceController
       $request = service('request');
       $searchData = $request->getGet(); 
   
+      $page = "1";
+      if (isset($searchData) && isset($searchData['page'])) {
+        $page = $searchData['page'];
+      }
+
+      $page_count = 20;
+      if (isset($searchData) && isset($searchData['page_count'])) {
+        $page_count = (int)$searchData['page_count'];
+      }
+
       $cat_model_id = "";
       if (isset($searchData) && isset($searchData['cat_model_id'])) {
         $cat_model_id = $searchData['cat_model_id'];
@@ -24,32 +34,24 @@ class TerminalMdl extends ResourceController
   
       // Get data 
       $model = new TerminalMdlModel();
-  
-      if ($cat_model_id == '' && $cat_model_nm == '') {
-        $paginateData = $model->paginate(2);
-      } else {      
-        $paginateData = $model->select('TW_CAT_MODEL.*,TW_VAN_INFO.VAN_NM');
-        if ( $cat_model_id != ""){
-          $paginateData = $paginateData->Where('cat_model_id', $cat_model_id); 
-        } 
-        if ( $cat_model_nm != ""){
-          $paginateData = $paginateData->Where('cat_model_nm', $cat_model_nm); 
-        } 
-        $paginateData = $paginateData->join('TW_VAN_INFO', "TW_VAN_INFO.van_id = TW_CAT_MODEL.van_id");
-        $paginateData = $paginateData->paginate(2);
-
-        $data = [
-          'data' => $paginateData,
-          'currentPage' =>  $model->pager->getCurrentPage('default'),
-          'totalPages' =>  $model->pager->getPageCount('default'),
-        ];
-
-        return $this->respond($data);
-      }
+      $data = $model->getTerminalMdlList($page ,$page_count ,$cat_model_id, $cat_model_nm);
+      return $this->respond($data);  
     }
 
-    public function getTerminalMdl($van_id = false, $cat_model_id = false){
-      log_message('info','getTerminalMdl'); 
+    public function getTerminalMdl(){
+      $request = service('request');
+      $searchData = $request->getGet(); 
+
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = (string)$searchData['van_id'];
+      }
+
+      $cat_model_id = "";
+      if (isset($searchData) && isset($searchData['cat_model_id'])) {
+        $cat_model_id = $searchData['cat_model_id'];
+      }      
+      log_message('info',$van_id); 
       $model = new TerminalMdlModel();
       $data = $model->getTerminalMdl($van_id, $cat_model_id);
       return $this->respond($data);
@@ -81,10 +83,31 @@ class TerminalMdl extends ResourceController
           'status'   => 200,
           'error'    => null,
           'messages' => [
-              'success' => 'Van created successfully'
+              'success' => 'TerminalMdl created successfully'
           ]
       ];
       return $this->respondCreated($response);
     }
 
+    // update
+    public function updateTerminalMdl($id = null){
+      log_message('info','updateTerminalMdl'); 
+      $model = new TerminalMdlModel();
+      $session = session();
+      $van_id = $session->get('van_id');
+
+      $cat_model_id = $this->request->getVar('CAT_MODEL_ID');
+      $cat_model_nm = $this->request->getVar('CAT_MODEL_NM');
+      $description = $this->request->getVar('DESCRIPTION');
+
+      $model->set("CAT_MODEL_NM", $cat_model_nm)->set("DESCRIPTION", $description)->where("van_id", $van_id)->where("cat_model_id", $cat_model_id)->update();
+      $response = [
+        'status'   => 200,
+        'error'    => null,
+        'messages' => [
+            'success' => 'User updated successfully'
+        ]
+    ];
+    return $this->respond($response);
+  }
 }

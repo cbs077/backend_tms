@@ -60,8 +60,8 @@ class Employee extends ResourceController
           'messages' => [
               'success' => 'Employee updated successfully'
           ]
-      ];
-      return $this->respond($response);
+        ];
+        return $this->respond($response);
     }
 
     // delete

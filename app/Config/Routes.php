@@ -34,44 +34,75 @@ $routes->setAutoRoute(true);
 //$routes->get('/', 'Home::index');
   //$routes->resource('employee');
   //$routes->resource('user');
+  // Filter on route group
+  // $routes->group("admin", ["filter" => "myauth"] , function($routes){
+
+  //   $routes->post("sales", "AdminController::sales");
+  //   $routes->put("transactions", "ApiController::transactions");
+  // });
+
   //common
   $routes->post('signup', 'Home::signup');
   $routes->get('login/', 'Home::loginAuth');
+  $routes->get('logout/', 'Home::logout');
   $routes->post('upload', 'Home::upload');
 
-  // user
-  $routes->get('user/(:string)', 'User::getUserInfo/$1');
-  $routes->post('user/', 'User::insertUserMg');
+  //$routes->group("/", function($routes){  // 개발용 authGuard
+  $routes->group("/", ["filter" => "authGuard"] , function($routes){
+    // user
+    $routes->get('user/idcheck', 'User::getUserIdCheck');
+    $routes->get('getUserMgList', 'User::getUserMgList');
+    $routes->get('getUserInfo/(:any)', 'User::getUserInfo/$1');
+    $routes->put('updateUserInfo', 'User::updateUserInfo');
+    $routes->put('updatepwd/', 'User::updatePwd');
+    $routes->post('user/', 'User::insertUserMg');
 
-  // van
-  $routes->get('van/list', 'Van::getVanMgList');
-  $routes->get('van/(:num)', 'Van::getVanMg/$1');
-  $routes->get('van/idcheck/(:num)', 'Van::getVanIdCheck/$1');
-  $routes->post('van/', 'Van::insertVanMg');
+    // van
+    $routes->get('van/list', 'Van::getVanMgList');
+    $routes->get('van', 'Van::getVanMgInfo');
+    $routes->get('van/(:num)', 'Van::getVanMg/$1');
+    $routes->get('van/idcheck/(:num)', 'Van::getVanIdCheck/$1');
+    $routes->post('van/', 'Van::insertVanMg');
+    $routes->put('van/', 'Van::updateVanMg');
 
-  // terminal
-  $routes->get('terminal/list', 'Terminal::getTerminalList');
-  $routes->get('terminal/(:num)/(:num)', 'Terminal::getTerminal/$1/$2');
-  $routes->get('terminal/idcheck/(:num)/(:num)', 'Terminal::getCatIdCheck/$1/$2');
-  $routes->post('terminal/', 'Terminal::insertTerminal');
+    // terminal
+    $routes->get('terminal/list', 'Terminal::getTerminalList');
+    $routes->get('terminal/(:num)/(:num)', 'Terminal::getTerminal/$1/$2');
+    $routes->get('terminal/idcheck/(:num)/(:num)', 'Terminal::getCatIdCheck/$1/$2');
+    $routes->post('terminal/', 'Terminal::insertTerminal');
+    $routes->put('terminal/', 'Terminal::updateTerminal');
+    $routes->delete('terminal/', 'Terminal::deleteTerminal');
 
-  // terminalmdl
-  $routes->get('terminal_mdl/list', 'TerminalMdl::getTerminalMdlList');
-  $routes->get('terminal_mdl/(:num)/(:num)', 'TerminalMdl::getTerminalMdl/$1/$2');
-  $routes->get('terminal_mdl/idcheck/(:num)/(:num)', 'TerminalMdl::getMdlIdCheck/$1/$2');
-  $routes->post('terminal_mdl/', 'TerminalMdl::insertTerminalMdl');
+    // terminal_reg_hist
+    $routes->get('reghist/list', 'RegHist::getTerminalRegHist');
+    $routes->get('reghist/(:num)/(:num)', 'RegHist::getTerminal/$1/$2');
+    $routes->get('reghist/idcheck/(:num)/(:num)', 'RegHist::getCatIdCheck/$1/$2');
+    $routes->post('reghist/', 'RegHist::insertRegHist');
+    $routes->delete('reghist/', 'RegHist::deleteRegHist');
 
-  //swgroup SwGroup contollrer 이름 관계있음.
-  $routes->get('swgroup/list', 'SwGroup::getSwGroupMgList');
-  $routes->get('swgroup/(:num)/(:num)', 'SwGroup::getSwGroupMg/$1/$2');
-  $routes->get('swgroup/idcheck/(:num)/(:num)', 'SwGroup::getSwGroupIdCheck/$1/$2');
-  $routes->post('swgroup/', 'SwGroup::insertSwGroupMg');
+    // terminalmdl
+    $routes->get('terminal_mdl/list', 'TerminalMdl::getTerminalMdlList');
+  // $routes->get('terminal_mdl/info', 'TerminalMdl::getTerminalMdlInfo');
+    $routes->get('terminal_mdl', 'TerminalMdl::getTerminalMdl');
+    $routes->get('terminal_mdl/idcheck/(:num)/(:num)', 'TerminalMdl::getMdlIdCheck/$1/$2');
+    $routes->post('terminal_mdl/', 'TerminalMdl::insertTerminalMdl');
+    $routes->put('terminal_mdl/', 'TerminalMdl::updateTerminalMdl');
 
-  //swoprmg 
-  $routes->get('swoprmg/list', 'SwOprMg::getSwOprMgList');
-  // $routes->get('swoprmg/(:num)/(:num)', 'SwOprMg::getSwGroupMg/$1/$2');
-  // $routes->get('swoprmg/idcheck/(:num)/(:num)', 'SwOprMg::getSwGroupIdCheck/$1/$2');
-  $routes->post('swoprmg/', 'SwOprMg::insertSwOprMg');
+    //swgroup SwGroup contollrer 이름 관계있음.
+    $routes->get('swgroup/list', 'SwGroup::getSwGroupMgList');
+    $routes->get('swgroup', 'SwGroup::getSwGroupMg');
+    $routes->get('swgroup/idcheck/(:num)/(:num)', 'SwGroup::getSwGroupIdCheck/$1/$2');
+    $routes->post('swgroup/', 'SwGroup::insertSwGroupMg');
+    $routes->put('swgroup/(:any)', 'SwGroup::updateSwGroupMg/$1');
+    $routes->delete('swgroup/', 'SwGroup::deleteTerminal');
+
+    //swoprmg 
+    $routes->get('swoprmg/list', 'SwOprMg::getSwOprMgList');
+    $routes->get('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::getSwOprMg/$1/$2/$3');
+    $routes->delete('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::deleteSwOprMg/$1/$2/$3');
+    $routes->get('swoprmg/idcheck/(:any)/(:num)/(:num)', 'SwOprMg::getSwIdCheck/$1/$2/$3');
+    $routes->post('swoprmg/', 'SwOprMg::insertSwOprMg');
+  });
   //$routes->resource('swgroup');
 
 /*
