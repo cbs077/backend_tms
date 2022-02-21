@@ -5,6 +5,7 @@ use App\Models\UserModel;
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Files\File;
+use Firebase\JWT\JWT;
 
 class Home extends BaseController
 {
@@ -64,25 +65,38 @@ class Home extends BaseController
             $authenticatePassword = password_verify($password, $pass);
             
             if($authenticatePassword){
+                //세션
+                // $ses_data = [
+                //     'user_id' => $data['USER_ID'],
+                //     'user_name' => $data['USER_NM'],
+                //     'van_id' => $data['COMP_ID'],
+                //     'isLoggedIn' => 'true'
+                // ];
+                // $res = ["user_id" => $data['USER_ID'], "van_id" => $data['COMP_ID']];
 
-                $ses_data = [
-                    'user_id' => $data['USER_ID'],
-                    'user_name' => $data['USER_NM'],
-                    'van_id' => $data['COMP_ID'],
-                    'isLoggedIn' => 'true'
-                ];
-                $res = ["user_id" => $data['USER_ID'], "van_id" => $data['COMP_ID']];
+                
+                // log_message('debug', json_encode($res)); 
+                // log_message('debug', json_encode($ses_data)); 
+                // $session->set($ses_data);
 
-                log_message('debug', json_encode($res)); 
-                log_message('debug', json_encode($ses_data)); 
-                $session->set($ses_data);
 
+                $issuedAt = time();
+                $expirationTime = $issuedAt + 6000;  // jwt valid for 60 seconds from the issued time
+                $payload = array(
+                    'userid' => "test",
+                    'iat' => $issuedAt,
+                    'exp' => $expirationTime
+                );
+                $key = "cskhfuwt48wbfjn3i4utnjf38754hf3yfbjc93758thrjsnf83hcwn8437";
+                $alg = 'HS256';
+                $token = JWT::encode($payload, $key, $alg);
+             
                 $response = [
                     'status'   => 200,
                     'error'    => null,
                     'messages' => [
                         'success' => 'loginAuth successfully',
-                        'info' => $res
+                        'token' => $token
                     ]
                   ];
                 return $this->respondCreated($response);            

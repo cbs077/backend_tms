@@ -23,7 +23,7 @@ class App extends BaseConfig
      *
      * @var string
      */
-    public $baseURL = 'http://localhost:8081/';
+    public $baseURL = 'http://localhost:8080/';
 
     /**
      * --------------------------------------------------------------------------
@@ -162,7 +162,7 @@ class App extends BaseConfig
      *
      * @var string
      */
-    public $sessionCookieName = 'ci_session';
+    public $sessionCookieName = 'ADMIN_JSESSIONID';
 
     /**
      * --------------------------------------------------------------------------
@@ -258,7 +258,7 @@ class App extends BaseConfig
      * @deprecated use Config\Cookie::$domain property instead.
      */
     //public $cookieDomain = 'http://35.175.160.167:8080';
-    public $cookieDomain = '.tms-test-server.p-e.kr';
+    public $cookieDomain = 'http://tms-test-server.p-e.kr:8080';
 
     /**
      * --------------------------------------------------------------------------

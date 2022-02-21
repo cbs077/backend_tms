@@ -46,12 +46,12 @@ class Cookie extends BaseConfig
      * --------------------------------------------------------------------------
      * Cookie Domain
      * --------------------------------------------------------------------------
-     *
+     * 여기서 진짜 설정됨.
      * Set to `.your-domain.com` for site-wide cookies.
      *
      * @var string
      */
-    public $domain = '';
+    public $domain = '.tms-test-server.p-e.kr';
 
     /**
      * --------------------------------------------------------------------------

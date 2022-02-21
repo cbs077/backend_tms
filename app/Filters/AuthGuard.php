@@ -6,6 +6,8 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Filters\FilterInterface;
 use Config\Services;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Exception;
 
 
@@ -21,23 +23,29 @@ class AuthGuard implements FilterInterface
         if($method == "OPTIONS"){
             die();
         }
-        $session = session();
-        $session->get('isLoggedIn');
-        $val = $session->get('isLoggedIn');
-        log_message('debug', json_encode($val)); 
-        log_message('debug', json_encode($val));
+        $key = "cskhfuwt48wbfjn3i4utnjf38754hf3yfbjc93758thrjsnf83hcwn8437"; //getenv('TOKEN_SECRET');
+        $authHeader = $request->getHeader("Authorization");
+        $authHeader = $authHeader->getValue();
 
-        if ($session->get('isLoggedIn') == 'false' || $session->get('isLoggedIn') == null)
-        {
-            log_message('info', "AuthGuard1_fail"); 
+        try {
+            JWT::decode($authHeader, new Key($key, 'HS256'));
+        } catch (\Throwable $th) {
+            //log_message('info', "Authorization3:".$th); 
             return Services::response()
-                ->setJSON(
-                    [
-                        'error' => "HTTP_AUTHORIZATION"
-                    ]
-                )
-                ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
+                            ->setJSON(['msg' => 'Invalid Token'])
+                            ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
         }
+        // if ($session->get('isLoggedIn') == 'false' || $session->get('isLoggedIn') == null)
+        // {
+        //     log_message('info', "AuthGuard1_fail"); 
+        //     return Services::response()
+        //         ->setJSON(
+        //             [
+        //                 'error' => "HTTP_AUTHORIZATION"
+        //             ]
+        //         )
+        //         ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
+        // }
     }
     
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)

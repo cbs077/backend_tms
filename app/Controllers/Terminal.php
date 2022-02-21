@@ -41,10 +41,15 @@ class Terminal extends ResourceController
       if (isset($searchData) && isset($searchData['cat_serial_no'])) {
         $cat_serial_no = $searchData['cat_serial_no'];
       }
-  
+
+      $cat_model_id = "";
+      if (isset($searchData) && isset($searchData['cat_model_id'])) {
+        $cat_model_id = $searchData['cat_model_id'];
+      }
+      log_message('info', json_encode($sw_group_id)); 
       // Get data 
       $model = new TerminalModel();
-      $data = $model->getTerminalList($page ,$page_count ,$sw_group_id, $sw_version, $cat_serial_no);
+      $data = $model->getTerminalList($page ,$page_count ,$sw_group_id, $sw_version, $cat_serial_no, $cat_model_id);
       return $this->respond($data); 
     }
 
@@ -77,6 +82,7 @@ class Terminal extends ResourceController
             'REG_DT'  => $this->request->getVar('REG_DT'),
             'REG_USER'  => $this->request->getVar('REG_USER'),
         ];
+        log_message('info', json_encode($data)); 
         $model->insert($data);
         $response = [
           'status'   => 200,

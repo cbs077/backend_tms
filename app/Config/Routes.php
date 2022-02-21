@@ -42,10 +42,12 @@ $routes->setAutoRoute(true);
   // });
 
   //common
-  $routes->post('signup', 'Home::signup');
-  $routes->get('login/', 'Home::loginAuth');
-  $routes->get('logout/', 'Home::logout');
-  $routes->post('upload', 'Home::upload');
+  $routes->group("/", function($routes){  // 개발용 authGuard
+    $routes->post('signup', 'Home::signup');
+    $routes->get('login/', 'Home::loginAuth');
+    $routes->get('logout/', 'Home::logout');
+    $routes->post('upload', 'Home::upload');
+  });
 
   //$routes->group("/", function($routes){  // 개발용 authGuard
   $routes->group("/", ["filter" => "authGuard"] , function($routes){
