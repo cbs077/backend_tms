@@ -17,6 +17,16 @@ class Terminal extends ResourceController
       $request = service('request');
       $searchData = $request->getGet(); // OR $this->request->getGet();
   
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = $searchData['van_id'];
+      }
+
+      $sw_version = "";
+      if (isset($searchData) && isset($searchData['sw_version'])) {
+        $sw_version = $searchData['sw_version'];
+      }
+
       $page = "1";
       if (isset($searchData) && isset($searchData['page'])) {
         $page = $searchData['page'];
@@ -49,7 +59,7 @@ class Terminal extends ResourceController
       log_message('info', json_encode($sw_group_id)); 
       // Get data 
       $model = new TerminalModel();
-      $data = $model->getTerminalList($page ,$page_count ,$sw_group_id, $sw_version, $cat_serial_no, $cat_model_id);
+      $data = $model->getTerminalList($page ,$page_count ,$van_id, $sw_group_id, $sw_version, $cat_serial_no, $cat_model_id);
       return $this->respond($data); 
     }
 
@@ -83,25 +93,36 @@ class Terminal extends ResourceController
             'REG_USER'  => $this->request->getVar('REG_USER'),
         ];
         log_message('info', json_encode($data)); 
-        $model->insert($data);
+        $res = $model->insert($data);
+        $result = "";
+        $resCode = 200;
+        if((string)$res == 0) {
+          $result = 'Terminal created successfully'; 
+          $resCode = 200;
+        }
+        else {
+          $result = 'Terminal created fail'; 
+          $resCode = 400;
+        }
+
         $response = [
-          'status'   => 200,
+          'status'   => $resCode,
           'error'    => null,
           'messages' => [
-              'success' => 'Van created successfully'
+              'success' => $result,
+              "resutl" => $res
           ]
-      ];
-      return $this->respondCreated($response);
+          
+        ];
+        return $this->respondCreated($response);
     }
 
     // update
     public function updateTerminal($id = null){
         log_message('info','updateTerminal'); 
         $model = new TerminalModel();
-        $session = session();
-        $user_id = $session->get('user_id');
-        $van_id = $session->get('van_id');
 
+        $van_id = $this->request->getVar('VAN_ID');
         $cat_serial_no = $this->request->getVar('CAT_SERIAL_NO');
         $cat_model_id = $this->request->getVar('CAT_MODEL_ID');
         $sw_group_id = $this->request->getVar('SW_GROUP_ID');
@@ -124,14 +145,13 @@ class Terminal extends ResourceController
 
     // delete
     public function deleteTerminal($id = null){
-        $model = new TerminalModel();       $session = session();
-        $user_id = $session->get('user_id');
-        $van_id = $session->get('van_id');
-
+        $model = new TerminalModel();       
+        
         $cat_serial_no = $this->request->getVar('CAT_SERIAL_NO');
+        $van_id = $this->request->getVar('VAN_ID');
+        $data = $model->where('CAT_SERIAL_NO', $cat_serial_no)->where('VAN_ID', $van_id)->find();
 
-        $data = $model->where('van_id', $van_id)->where('cat_serial_no', $cat_serial_no)->find();
-
+        log_message('info',"deleteTerminal".json_encode($data )); 
         if($data){
             $res = $model->deleteTerminal($van_id, $cat_serial_no);
             log_message('info',"deleteTerminal".json_encode($res)); 

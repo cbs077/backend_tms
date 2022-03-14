@@ -22,6 +22,11 @@ class TerminalMdl extends ResourceController
         $page_count = (int)$searchData['page_count'];
       }
 
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = (string)$searchData['van_id'];
+      }
+
       $cat_model_id = "";
       if (isset($searchData) && isset($searchData['cat_model_id'])) {
         $cat_model_id = $searchData['cat_model_id'];
@@ -34,7 +39,7 @@ class TerminalMdl extends ResourceController
   
       // Get data 
       $model = new TerminalMdlModel();
-      $data = $model->getTerminalMdlList($page ,$page_count ,$cat_model_id, $cat_model_nm);
+      $data = $model->getTerminalMdlList($page ,$page_count, $van_id ,$cat_model_id, $cat_model_nm);
       return $this->respond($data);  
     }
 
@@ -78,24 +83,36 @@ class TerminalMdl extends ResourceController
             'REG_DT'  => $this->request->getVar('REG_DT'),
             'REG_USER'  => $this->request->getVar('REG_USER')
         ];
-        $model->insert($data);
+        $res = $model->insert($data);
+        $result = "";
+        $resCode = 200;
+        if((string)$res == 0) {
+          $result = 'TerminalMdl created successfully'; 
+          $resCode = 200;
+        }
+        else {
+          $result = 'TerminalMdl created fail'; 
+          $resCode = 400;
+        }
+
         $response = [
-          'status'   => 200,
+          'status'   => $resCode,
           'error'    => null,
           'messages' => [
-              'success' => 'TerminalMdl created successfully'
+              'success' => $result,
+              "resutl" => $res
           ]
-      ];
-      return $this->respondCreated($response);
+          
+        ];
+        return $this->respondCreated($response);
     }
 
     // update
     public function updateTerminalMdl($id = null){
       log_message('info','updateTerminalMdl'); 
       $model = new TerminalMdlModel();
-      $session = session();
-      $van_id = $session->get('van_id');
 
+      $van_id = $this->request->getVar('VAN_ID');
       $cat_model_id = $this->request->getVar('CAT_MODEL_ID');
       $cat_model_nm = $this->request->getVar('CAT_MODEL_NM');
       $description = $this->request->getVar('DESCRIPTION');
@@ -105,7 +122,7 @@ class TerminalMdl extends ResourceController
         'status'   => 200,
         'error'    => null,
         'messages' => [
-            'success' => 'User updated successfully'
+            'success' => 'updateTerminalMdl updated successfully'
         ]
     ];
     return $this->respond($response);

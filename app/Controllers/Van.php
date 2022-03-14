@@ -12,31 +12,29 @@ class Van extends ResourceController
       $request = service('request');
       $searchData = $request->getGet(); // OR $this->request->getGet();
   
-      $search = "";
-      if (isset($searchData) && isset($searchData['search'])) {
-        $search = $searchData['search'];
+      log_message('info','getTerminalMdlList'); 
+      $request = service('request');
+      $searchData = $request->getGet(); 
+  
+      $page = "1";
+      if (isset($searchData) && isset($searchData['page'])) {
+        $page = $searchData['page'];
+      }
+
+      $page_count = 10;
+      if (isset($searchData) && isset($searchData['page_count'])) {
+        $page_count = (int)$searchData['page_count'];
+      }
+
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = (string)$searchData['van_id'];
       }
   
       // Get data 
       $model = new VanModel();
-  
-      if ($search == '') {
-        $paginateData = $model->paginate(2);
-      } else {
-        $paginateData = $model->select('*')
-          ->orLike('VAN_ID', $search)
-          //->orLike('email', $search)    			
-          ->paginate(2);
-      }
-
-      $data = [
-        'users' => $paginateData,
-        'currentPage' =>  $model->pager->getCurrentPage('default'),
-        'totalPages' =>  $model->pager->getPageCount('default'),
-        'search' => $search
-      ];
-  
-      return $this->respond($data);
+      $data = $model->getVanList($page ,$page_count, $van_id);
+      return $this->respond($data);  
     }
 
     public function getVanMg($id = false){
@@ -78,24 +76,34 @@ class Van extends ResourceController
             'REG_USER'  => $this->request->getVar('REG_USER'),
             'UPDATE_DT'  => $this->request->getVar('UPDATE_DT'),
         ];
-        $model->insert($data);
+        $res = $model->insert($data);
+        $result = "";
+        $resCode = 200;
+        if((string)$res == 0) {
+          $result = 'insertVanMg created successfully'; 
+          $resCode = 200;
+        }
+        else {
+          $result = 'insertVanMg created fail'; 
+          $resCode = 400;
+        }        
         $response = [
-          'status'   => 200,
+          'status'   => $resCode,
           'error'    => null,
           'messages' => [
-              'success' => 'Van created successfully'
+              'success' => $result,
+              "resutl" => $res
           ]
-      ];
-      return $this->respondCreated($response);
+        ];
+        return $this->respondCreated($response);
     }
 
     // update
     public function updateVanMg($id = null){
       log_message('info','updateVanMg'); 
       $model = new VanModel();
-      $session = session();
-      $van_id = $session->get('van_id');
 
+      $van_id = $this->request->getVar('VAN_ID');
       $cat_model_nm = $this->request->getVar('VAN_NM');
       $manager_nm = $this->request->getVar('MANAGER_NM');
       $phone = $this->request->getVar('PHONE');
@@ -103,7 +111,7 @@ class Van extends ResourceController
       $zip_code = $this->request->getVar('ZIP_CODE');
       $addr1 = $this->request->getVar('ADDR1');
       $addr2 = $this->request->getVar('ADDR2');
-      $update_dt = $this->request->getVar('UPDATE_DT');
+      $update_dt = date('Y-m-d H:i:s');
 
       log_message('info', json_encode($cat_model_nm)); 
       $model = $model->set("VAN_NM", $cat_model_nm);

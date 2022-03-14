@@ -73,30 +73,44 @@ class User extends ResourceController
             'COMP_ID'  => $this->request->getVar('COMP_ID'),
             'PWD'  => password_hash($this->request->getVar('PWD'), PASSWORD_BCRYPT),//$this->request->getVar('PWD'),
             'USER_RIGHTS'  => $this->request->getVar('USER_RIGHTS'),
+            'PHONE'  => $this->request->getVar('PHONE'),
+            'FAX'  => $this->request->getVar('FAX'),
+            'ZIP_CODE'  => $this->request->getVar('ZIP_CODE'),
+            'ADDR1'  => $this->request->getVar('ADDR1'),
+            'ADDR2w'  => $this->request->getVar('ADDR2'),
             'REG_DT'  => $this->request->getVar('REG_DT'),
             'REG_USER'  => $this->request->getVar('REG_USER'),
             'UPDATE_DT'  => $this->request->getVar('UPDATE_DT'),
         ];
-        $result = $model->insert($data);
-        //ERROR - 2022-02-04 14:24:35 --> Duplicate entry 'cbs2351' for key 'PRIMARY'
-        //에러 처리 필요.
-        //log_message('info',$result); 
+        $res = $result = $model->insert($data);
+        $result = "";
+        $resCode = 200;
+        if((string)$res == 0) {
+          $result = 'User created created successfully'; 
+          $resCode = 200;
+        }
+        else {
+          $result = 'User created created fail'; 
+          $resCode = 400;
+        }        
         $response = [
-          'status'   => 201,
+          'status'   => $resCode,
           'error'    => null,
           'messages' => [
-              'success' => 'User created successfully'
+              'success' => $result,
+              "resutl" => $res
           ]
-      ];
-      return $this->respondCreated($response);
+        ];     
+        return $this->respondCreated($response);       
+
     }
 
     public function updatePwd($id = false){
       log_message('info','updatePwd'); 
       $model = new UserModel();
 
-      $user_id = $this->request->getVar('user_id');
-      $pwd = $this->request->getVar('pwd');
+      $user_id = $this->request->getVar('USER_ID');
+      $pwd = $this->request->getVar('PWD');
 
       $data = $model->set("PWD", password_hash($pwd ,PASSWORD_DEFAULT))->where("user_id", $user_id)->update();
       return $this->respond($data);
@@ -104,22 +118,22 @@ class User extends ResourceController
 
     public function updateUserInfo(){
         $model = new UserModel();
-        $session = session();
-        $user_id = $session->get('user_id');
-        $van_id = $session->get('van_id');
+        $user_id = $this->request->getVar('USER_ID');
+        $user_nm = $this->request->getVar('USER_NM');
+        $phone = $this->request->getVar('PHONE');
+        $fax = $this->request->getVar('FAX');
+        $zip_code = $this->request->getVar('ZIP_CODE');
+        $addr1 = $this->request->getVar('ADDR1');
+        $update_dt = date('Y-m-d H:i:s');
 
-        $data = [
-          'USER_NM'  => $this->request->getVar('USER_NM'),
-          'PHONE'  => $this->request->getVar('phone'),
-          'PWD'  => password_hash($this->request->getVar('PWD'), PASSWORD_BCRYPT),
-          'FAX'  => $this->request->getVar('fax'),
-          'ZIP_CODE'  => $this->request->getVar('zip_code'),
-          'ADDR1'  => $this->request->getVar('addr1'),
-          'ADDR2'  => $this->request->getVar('addr2'),
-         ];
-        log_message('info', json_encode($user_id)); 
-        log_message('info', json_encode($data)); 
-        $model->update($user_id, $data);
+        $model = $model->set("USER_NM", $user_nm);
+        $model = $model->set("PHONE", $phone);
+        $model = $model->set("FAX", $fax);
+        $model = $model->set("ZIP_CODE", $zip_code);
+        $model = $model->set("ADDR1", $addr1);
+        $model = $model->set("UPDATE_DT", $update_dt);
+        $model->where("user_id", $user_id)->update();
+
         $response = [
           'status'   => 200,
           'error'    => null,

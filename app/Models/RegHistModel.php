@@ -10,12 +10,13 @@ class RegHistModel extends Model
     protected $allowedFields = ['VAN_ID', 'CAT_MODEL_ID', 'REG_DT', 'SERIAL_NO_FROM', 'SERIAL_NO_TO', 'REG_USER'];
 
 
-    public function getTerminalRegHist($cur_page, $page_count, $cat_model_id, $search_start_dt, $search_end_dt)
+    public function getTerminalRegHist($cur_page, $page_count, $van_id, $cat_model_id, $search_start_dt, $search_end_dt)
     {        
-        $sql = 'SELECT * FROM (SELECT * FROM TW_CAT_REG_HIST
+        $sql = 'SELECT *, a.REG_DT as REG_DT FROM (SELECT * FROM TW_CAT_REG_HIST
                 Where CASE WHEN :cat_model_id: = "" THEN true ELSE cat_model_id=:cat_model_id: END
-                and CASE WHEN :search_start_dt: = "" THEN true ELSE REG_DT > :search_start_dt: END
-                and CASE WHEN :search_end_dt: = "" THEN true ELSE REG_DT < :search_end_dt: END) a
+                and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
+                and CASE WHEN :search_start_dt: = "" THEN true ELSE REG_DT >= :search_start_dt: END
+                and CASE WHEN :search_end_dt: = "" THEN true ELSE REG_DT <= DATE_ADD(:search_end_dt:, INTERVAL 1 DAY)  END) a
                 left join TW_CAT_MODEL b on a.van_id = b.van_id and a.cat_model_id = b.cat_model_id
                 left join TW_VAN_INFO d on a.van_id = d.van_id
                 ORDER BY a.van_id, a.cat_model_id DESC        
@@ -23,6 +24,7 @@ class RegHistModel extends Model
                 offset :offset:'; 
                 
         $results = $this->db->query($sql, [
+              'van_id' => $van_id,
               'cat_model_id' => $cat_model_id,
               'search_start_dt' => $search_start_dt,
               'search_end_dt' => $search_end_dt,
@@ -32,12 +34,14 @@ class RegHistModel extends Model
 
         $count_sql = 'SELECT * FROM (SELECT * FROM TW_CAT_REG_HIST
                 Where CASE WHEN :cat_model_id: = "" THEN true ELSE cat_model_id=:cat_model_id: END
-                and CASE WHEN :search_start_dt: = "" THEN true ELSE REG_DT > :search_start_dt: END
-                and CASE WHEN :search_end_dt: = "" THEN true ELSE REG_DT < :search_end_dt: END) a
+                and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
+                and CASE WHEN :search_start_dt: = "" THEN true ELSE REG_DT >= :search_start_dt: END
+                and CASE WHEN :search_end_dt: = "" THEN true ELSE REG_DT <= DATE_ADD(:search_end_dt:, INTERVAL 1 DAY) END) a
                 left join TW_CAT_MODEL b on a.van_id = b.van_id and a.cat_model_id = b.cat_model_id
                 left join TW_VAN_INFO d on a.van_id = d.van_id';
 
         $count_results = $this->db->query($count_sql, [
+            'van_id' => $van_id,
             'cat_model_id' => $cat_model_id,
             'search_start_dt' => $search_start_dt,
             'search_end_dt' => $search_end_dt

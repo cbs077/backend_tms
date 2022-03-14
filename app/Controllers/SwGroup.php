@@ -23,6 +23,11 @@ class SwGroup extends ResourceController
         $page_count = (int)$searchData['page_count'];
       }
 
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = (string)$searchData['van_id'];
+      }
+
       $sw_group_id = "";
       if (isset($searchData) && isset($searchData['sw_group_id'])) {
         $sw_group_id = $searchData['sw_group_id'];
@@ -35,7 +40,7 @@ class SwGroup extends ResourceController
   
       // Get data 
       $model = new SwGroupModel();
-      $data = $model->getSwGroupMgList($page ,$page_count ,$sw_group_id, $sw_group_nm);
+      $data = $model->getSwGroupMgList($page ,$page_count , $van_id, $sw_group_id, $sw_group_nm);
       return $this->respond($data);  
     }
 
@@ -68,24 +73,37 @@ class SwGroup extends ResourceController
 
     // create
     public function insertSwGroupMg() {
-        log_message('info','swgroup_create'); 
-        $model = new SwGroupModel();
-        $data = [
-            'VAN_ID' => $this->request->getVar('VAN_ID'),
-            'SW_GROUP_ID'  => $this->request->getVar('SW_GROUP_ID'),
-            'SW_GROUP_NM'  => $this->request->getVar('SW_GROUP_NM'),
-            'DESCRIPTION'  => $this->request->getVar('DESCRIPTION'),
-            'REG_DT'  => $this->request->getVar('REG_DT'),
-            'REG_USER'  => $this->request->getVar('REG_USER'),
-            'UPDATE_DT'  => $this->request->getVar('UPDATE_DT')
-        ];
-        $model->insert($data);
-        $response = [
-          'status'   => 200,
-          'error'    => null,
-          'messages' => [
-              'success' => 'SwGroup created successfully'
-          ]
+      log_message('info','swgroup_create'); 
+      $model = new SwGroupModel();
+      $data = [
+          'VAN_ID' => $this->request->getVar('VAN_ID'),
+          'SW_GROUP_ID'  => $this->request->getVar('SW_GROUP_ID'),
+          'SW_GROUP_NM'  => $this->request->getVar('SW_GROUP_NM'),
+          'DESCRIPTION'  => $this->request->getVar('DESCRIPTION'),
+          'REG_DT'  => $this->request->getVar('REG_DT'),
+          'REG_USER'  => $this->request->getVar('REG_USER'),
+          'UPDATE_DT'  => date('Y-m-d H:i:s')
+      ];
+      $res = $model->insert($data);
+      $result = "";
+      $resCode = 200;
+      if((string)$res == 0) {
+        $result = 'SwGroup created successfully'; 
+        $resCode = 200;
+      }
+      else {
+        $result = 'SwGroup created fail'; 
+        $resCode = 400;
+      }
+
+      $response = [
+        'status'   => $resCode,
+        'error'    => null,
+        'messages' => [
+            'success' => $result,
+            "resutl" => $res
+        ]
+          
       ];
       return $this->respondCreated($response);
     }
@@ -94,13 +112,13 @@ class SwGroup extends ResourceController
     public function updateSwGroupMg($sw_group_id = false){
       log_message('info','updateSwGroupMg'); 
       $model = new SwGroupModel();
-      $session = session();
-      $van_id = $session->get('van_id');
 
+      $van_id = $this->request->getVar('VAN_ID');
+      $sw_group_id = $this->request->getVar('SW_GROUP_ID');
       $sw_group_nm = $this->request->getVar('SW_GROUP_NM');
       $description = $this->request->getVar('DESCRIPTION');
 
-      log_message('info','swgroup_create:'.$van_id.":".$sw_group_id.":".$sw_group_nm.":".$description);   
+      log_message('info','updateSwGroupMg:'.$van_id.":".$sw_group_id.":".$sw_group_nm.":".$description);   
       $res = $model->updateSwGroupMg($van_id, $sw_group_id, $sw_group_nm, $description);
       $response = [
           'status'   => 200,
@@ -117,9 +135,7 @@ class SwGroup extends ResourceController
     public function deleteTerminal($id = null){
       log_message('info','deleteTerminal'); 
       $model = new SwGroupModel();       
-      $session = session();
-      $van_id = $session->get('van_id');
-
+      $van_id = $this->request->getVar('VAN_ID');
       $sw_group_id = $this->request->getVar('SW_GROUP_ID');
 
       $data = $model->where('van_id', $van_id)->where('sw_group_id', $sw_group_id)->find();

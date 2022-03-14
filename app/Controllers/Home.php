@@ -6,6 +6,7 @@ use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Files\File;
 use Firebase\JWT\JWT;
+use App\Models\SwOprMgModel;
 
 class Home extends BaseController
 {
@@ -34,12 +35,28 @@ class Home extends BaseController
             $userModel = new UserModel();
 
             $data = [
-                'USER_ID'     => $this->request->getVar('user_id'),
-                'PWD' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT)
+                'USER_ID' => $this->request->getVar('user_id'),
+                'PWD' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT ),
+                'PHONE'  => "",
+                'FAX'  => "",
+                'ZIP_CODE'  => "",
+                'ADDR1'  => "",
+                'ADDR2'  => ""
             ];
 
-            $userModel->save($data);
-            log_message('info','signup_success'); 
+            $res = $userModel->insert($data);
+
+            $response = [
+                'status'   => 200,
+                'error'    => null,
+                'messages' => [
+                    'success' => 'signup successfully',
+                    'res' => $res,
+                ]
+              ];
+            return $this->respondCreated($response);  
+            //log_message('info', $res); 
+            //log_message('info','signup_success'); 
         }else{
             $data['validation'] = $this->validator;
             log_message('info','signup_fail'); 
@@ -96,7 +113,11 @@ class Home extends BaseController
                     'error'    => null,
                     'messages' => [
                         'success' => 'loginAuth successfully',
-                        'token' => $token
+                        'token' => $token,
+                        'user_id' =>  $data['USER_ID'],
+                        'user_name' =>  $data['USER_NM'],
+                        'van_id' => $data['COMP_ID'],
+                        'user_right' => $data['USER_RIGHTS']
                     ]
                   ];
                 return $this->respondCreated($response);            
@@ -115,7 +136,15 @@ class Home extends BaseController
         }else{
             log_message('info', "fail");
             $session->setFlashdata('msg', 'Email does not exist.');
-            return redirect()->to('/signin');
+            $response = [
+                'status'   => 405,
+                'error'    => null,
+                'messages' => [
+                    'success' => 'loginAuth fail'
+                ]
+              ];
+            return $this->respondCreated($response);
+            //return redirect()->to('/signin');
         }
     }
 
@@ -157,22 +186,6 @@ class Home extends BaseController
             //         //. '|max_dims[userfile,1024,768]',
             // ],
         ];
-        //log_message('info', $validationRule);
-        //$validationRule = 1;
-        // if (! $this->validate($validationRule)) {
-        //     $data = ['errors' => $this->validator->getErrors()];
-
-        //     $response = [
-        //     'status'   => 500,
-        //     'error'    => null,
-        //     'messages' => [
-        //         'success' => 'upload fail',
-        //         'data' => $data
-        //     ]
-        //     ];
-        //     return $this->respond($response);
-        //     //return view('upload_form', $data);
-        // }
 
         $img = $this->request->getFile('swfile');
 
@@ -187,6 +200,7 @@ class Home extends BaseController
                 'error'    => null,
                 'messages' => [
                     'success' => 'upload success',
+                    'filepath' =>  $filepath ,
                     'data' => $data
                 ]
             ];

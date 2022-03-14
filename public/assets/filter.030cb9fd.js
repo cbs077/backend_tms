@@ -1,0 +1,1 @@
+import{a0 as s}from"./vendor.9d37dd73.js";const e=t=>s(t).format("YYYY-MM-DD HH:mm:ss.SSS"),n=t=>s(t).format("YYYY-MM-DD"),m=(t,o=20)=>{const a=[];for(let r=0;r<o;r+=1)a.push(t);return a};export{n as a,m as b,e as d};

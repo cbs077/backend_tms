@@ -10,10 +10,11 @@ class TerminalModel extends Model
     protected $allowedFields = ['VAN_ID', 'CAT_SERIAL_NO', 'CAT_MODEL_ID', 'SW_GROUP_ID', 'SW_VERSION', 'STATUS', 'REG_DT', 'REG_USER', 'FIRST_USE_DT', 'LAST_USE_DT', 'BUSS_REG_NO', 'JOINS_NM', 'JOINS_ADDR'];
 
 
-    public function getTerminalList($cur_page, $page_count, $sw_group_id, $sw_version, $cat_serial_no, $cat_model_id)
+    public function getTerminalList($cur_page, $page_count, $van_id, $sw_group_id, $sw_version, $cat_serial_no, $cat_model_id)
     {        
-        $sql = 'SELECT * FROM (SELECT * FROM TW_CAT_LIST
-                Where CASE WHEN :sw_group_id: = "" THEN true ELSE sw_group_id=:sw_group_id: END
+        $sql = 'SELECT *, a.REG_DT, a.LAST_USE_DT  FROM (SELECT * FROM TW_CAT_LIST
+                Where CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
+                and CASE WHEN :sw_group_id: = "" THEN true ELSE sw_group_id=:sw_group_id: END
                 and CASE WHEN :sw_version: = "" THEN true ELSE sw_version=:sw_version: END
                 and CASE WHEN :cat_serial_no: = "" THEN true ELSE cat_serial_no=:cat_serial_no: END
                 and CASE WHEN :cat_model_id: = "" THEN true ELSE cat_model_id=:cat_model_id: END) a
@@ -26,6 +27,7 @@ class TerminalModel extends Model
                 offset :offset:'; 
                 
         $results = $this->db->query($sql, [
+              'van_id' => $van_id,
               'sw_group_id' => $sw_group_id,
               'sw_version' => $sw_version,
               'cat_serial_no' => $cat_serial_no,
@@ -35,7 +37,8 @@ class TerminalModel extends Model
         ]);
 
         $count_sql = 'SELECT * FROM (SELECT * FROM TW_CAT_LIST
-                Where CASE WHEN :sw_group_id: = "" THEN true ELSE sw_group_id=:sw_group_id: END
+                Where CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
+                and CASE WHEN :sw_group_id: = "" THEN true ELSE sw_group_id=:sw_group_id: END
                 and CASE WHEN :sw_version: = "" THEN true ELSE sw_version=:sw_version: END
                 and CASE WHEN :cat_serial_no: = "" THEN true ELSE cat_serial_no=:cat_serial_no: END
                 and CASE WHEN :cat_model_id: = "" THEN true ELSE cat_model_id=:cat_model_id: END) a
@@ -45,6 +48,7 @@ class TerminalModel extends Model
                 left join CM_CODE_MST e on e.code_type = "W001" and a.status = e.code';   
 
         $count_results = $this->db->query($count_sql, [
+            'van_id' => $van_id,
             'sw_group_id' => $sw_group_id,
             'sw_version' => $sw_version,
             'cat_serial_no' => $cat_serial_no,
@@ -76,7 +80,7 @@ class TerminalModel extends Model
             'serial_no' => $serial_no
         ]);
         
-        return $results->getResultArray();
+        return $results->getRow();
     }
 
     public function updateTerminal($van_id, $cat_serial_no, $cat_model_id, $sw_group_id, $status)    

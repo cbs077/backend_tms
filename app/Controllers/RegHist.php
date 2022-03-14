@@ -27,6 +27,11 @@ class RegHist extends ResourceController
         $page_count = (int)$searchData['page_count'];
       }
 
+      $van_id = "";
+      if (isset($searchData) && isset($searchData['van_id'])) {
+        $van_id = $searchData['van_id'];
+      }
+
       $cat_model_id = "";
       if (isset($searchData) && isset($searchData['cat_model_id'])) {
         $cat_model_id = $searchData['cat_model_id'];
@@ -44,34 +49,43 @@ class RegHist extends ResourceController
 
       // Get data 
       $model = new RegHistModel();
-      $data = $model->getTerminalRegHist($page ,$page_count ,$cat_model_id, $search_start_dt, $search_end_dt);
+      $data = $model->getTerminalRegHist($page ,$page_count, $van_id ,$cat_model_id, $search_start_dt, $search_end_dt);
       return $this->respond($data); 
     }
     // create
     public function insertRegHist() {
-        log_message('info','insertRegHist'); 
-        $model = new RegHistModel();
-        $session = session();
-        $van_id = $session->get('van_id');
-        $user_id = $session->get('user_id');
+      log_message('info','insertRegHist'); 
+      $model = new RegHistModel();
+      $data = [
+        'VAN_ID' => $this->request->getVar('VAN_ID'),
+        'CAT_MODEL_ID'  => $this->request->getVar('CAT_MODEL_ID'),
+        'SERIAL_NO_FROM'  => $this->request->getVar('SERIAL_NO_FROM'),
+        'SERIAL_NO_TO'  => $this->request->getVar('SERIAL_NO_TO'),
+        'REG_DT'  => date('Y-m-d H:i:s'),
+        'REG_USER'  => $this->request->getVar('REG_USER'),
+      ];
+      //VAN_ID, CAT_MODEL_ID, REG_DT, SERIAL_NO_FROM, SERIAL_NO_TO, REG_USER
 
+      $res = $model->insert($data);
+      $result = "";
+      $resCode = 200;
+      if((string)$res == 0) {
+        $result = 'insertRegHist created successfully'; 
+        $resCode = 200;
+      }
+      else {
+        $result = 'insertRegHist created fail'; 
+        $resCode = 400;
+      }
 
-        //VAN_ID, CAT_MODEL_ID, REG_DT, SERIAL_NO_FROM, SERIAL_NO_TO, REG_USER
-        $data = [
-            'VAN_ID' => $van_id,//$this->request->getVar('VAN_ID'),
-            'CAT_MODEL_ID'  => $this->request->getVar('CAT_MODEL_ID'),
-            'REG_DT'  => $this->request->getVar('REG_DT'),
-            'SERIAL_NO_FROM'  => $this->request->getVar('SERIAL_NO_FROM'),
-            'SERIAL_NO_TO'  => $this->request->getVar('SERIAL_NO_TO'),
-            'REG_USER'  => $user_id//$this->request->getVar('REG_USER'),
-        ];
-        $model->insert($data);
-        $response = [
-          'status'   => 200,
-          'error'    => null,
-          'messages' => [
-              'success' => 'RegHist created successfully'
-          ]
+      $response = [
+        'status'   => $resCode,
+        'error'    => null,
+        'messages' => [
+            'success' => $result,
+            "resutl" => $res
+        ]
+          
       ];
       return $this->respondCreated($response);
     }

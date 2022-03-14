@@ -10,8 +10,16 @@ class UserModel extends Model
 
     public function getSwOprMgList($cur_page, $page_count, $van_id, $user_id, $user_nm)    ///WHERE CASE WHEN van_id<800 THEN  :van_id: ELSE END Where a.van_id = :sw_group_id: and a.sw_version = :sw_version:'
     {        
-        $sql = 'SELECT * FROM TW_USER_INFO a
-                Where CASE WHEN :comp_id: = "" THEN true ELSE a.comp_id=:comp_id: END and
+        $sql = 'SELECT * ,
+                CASE WHEN user_rights = "S" THEN "SK"
+                    ELSE (
+                        SELECT VAN_NM
+                        FROM   TW_VAN_INFO
+                        WHERE  van_id = a.comp_id
+                    )
+                END USER_RIGHTS_NM   
+                FROM TW_USER_INFO a
+                Where CASE WHEN :van_id: = "" THEN true ELSE a.comp_id=:van_id: END and
                 CASE WHEN :user_id: = "" THEN true ELSE a.user_id=:user_id: END and
                 CASE WHEN :user_nm: = "" THEN true ELSE a.user_nm=:user_nm: END
                 LIMIT :page_count: 
@@ -20,7 +28,7 @@ class UserModel extends Model
         $results = $this->db->query($sql, [
               'page_count' => $page_count,
               'offset' =>  ($cur_page - 1) * $page_count,
-              'comp_id' => $van_id,
+              'van_id' => $van_id,
               'user_id' => $user_id,
               'user_nm' => $user_nm,
         ]);

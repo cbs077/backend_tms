@@ -9,10 +9,11 @@ class TerminalMdlModel extends Model
     protected $primaryKey =  ['VAN_ID','CAT_MODEL_ID'];
     protected $allowedFields = ['VAN_ID', 'CAT_MODEL_ID', 'CAT_MODEL_NM', 'DESCRIPTION', 'USE_YN', 'REG_DT', 'REG_USER'];
 
-    public function getTerminalMdlList($cur_page, $page_count, $cat_model_id, $cat_model_nm)    
+    public function getTerminalMdlList($cur_page, $page_count, $van_id, $cat_model_id, $cat_model_nm)    
     {        
         $sql = 'SELECT * FROM (SELECT * FROM TW_CAT_MODEL
                 Where CASE WHEN :cat_model_id: = "" THEN true ELSE cat_model_id=:cat_model_id: END
+                and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END 
                 and CASE WHEN :cat_model_nm: = "" THEN true ELSE cat_model_nm=:cat_model_nm: END) a
                 left join TW_VAN_INFO b on a.van_id = b.van_id
                 ORDER BY a.van_id, a.cat_model_id DESC        
@@ -20,6 +21,7 @@ class TerminalMdlModel extends Model
                 offset :offset:'; 
                 
         $results = $this->db->query($sql, [
+              'van_id' => $van_id,
               'cat_model_id' => $cat_model_id,
               'cat_model_nm' => $cat_model_nm,
               'page_count' => $page_count,
@@ -28,11 +30,13 @@ class TerminalMdlModel extends Model
 
         $count_sql = 'SELECT SQL_CALC_FOUND_ROWS * FROM (SELECT * FROM TW_CAT_MODEL
             Where CASE WHEN :cat_model_id: = "" THEN true ELSE cat_model_id=:cat_model_id: END
+            and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END 
             and CASE WHEN :cat_model_nm: = "" THEN true ELSE cat_model_nm=:cat_model_nm: END) a
             left join TW_VAN_INFO b on a.van_id = b.van_id
             ORDER BY a.van_id, a.cat_model_id DESC';        
         
         $count_results = $this->db->query($count_sql, [
+            'van_id' => $van_id,
             'cat_model_id' => $cat_model_id,
             'cat_model_nm' => $cat_model_nm,
         ]);
@@ -70,7 +74,7 @@ class TerminalMdlModel extends Model
             'cat_model_id' => $cat_model_id
         ]);
         
-        return $results->getResultArray();
+        return $results->getRow();
     }
 }
 

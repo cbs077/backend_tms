@@ -70,10 +70,14 @@ $routes->setAutoRoute(true);
     // terminal
     $routes->get('terminal/list', 'Terminal::getTerminalList');
     $routes->get('terminal/(:num)/(:num)', 'Terminal::getTerminal/$1/$2');
-    $routes->get('terminal/idcheck/(:num)/(:num)', 'Terminal::getCatIdCheck/$1/$2');
+    $routes->get('terminal/idcheck/(:any)/(:any)', 'Terminal::getCatIdCheck/$1/$2');
     $routes->post('terminal/', 'Terminal::insertTerminal');
     $routes->put('terminal/', 'Terminal::updateTerminal');
     $routes->delete('terminal/', 'Terminal::deleteTerminal');
+
+    // terminal_stat  
+    $routes->get('terminal/stat/list', 'TerminalStat::getTerminalUseInfoList');
+    $routes->get('terminal/stat/van/list', 'TerminalStat::getTerminalVanInfoList');
 
     // terminal_reg_hist
     $routes->get('reghist/list', 'RegHist::getTerminalRegHist');
@@ -86,24 +90,32 @@ $routes->setAutoRoute(true);
     $routes->get('terminal_mdl/list', 'TerminalMdl::getTerminalMdlList');
   // $routes->get('terminal_mdl/info', 'TerminalMdl::getTerminalMdlInfo');
     $routes->get('terminal_mdl', 'TerminalMdl::getTerminalMdl');
-    $routes->get('terminal_mdl/idcheck/(:num)/(:num)', 'TerminalMdl::getMdlIdCheck/$1/$2');
+    $routes->get('terminal_mdl/idcheck/(:any)/(:any)', 'TerminalMdl::getMdlIdCheck/$1/$2');
     $routes->post('terminal_mdl/', 'TerminalMdl::insertTerminalMdl');
     $routes->put('terminal_mdl/', 'TerminalMdl::updateTerminalMdl');
 
     //swgroup SwGroup contollrer 이름 관계있음.
     $routes->get('swgroup/list', 'SwGroup::getSwGroupMgList');
     $routes->get('swgroup', 'SwGroup::getSwGroupMg');
-    $routes->get('swgroup/idcheck/(:num)/(:num)', 'SwGroup::getSwGroupIdCheck/$1/$2');
+    $routes->get('swgroup/idcheck/(:any)/(:any)', 'SwGroup::getSwGroupIdCheck/$1/$2');
     $routes->post('swgroup/', 'SwGroup::insertSwGroupMg');
-    $routes->put('swgroup/(:any)', 'SwGroup::updateSwGroupMg/$1');
+    $routes->put('swgroup/', 'SwGroup::updateSwGroupMg/');
     $routes->delete('swgroup/', 'SwGroup::deleteTerminal');
 
     //swoprmg 
     $routes->get('swoprmg/list', 'SwOprMg::getSwOprMgList');
-    $routes->get('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::getSwOprMg/$1/$2/$3');
+    $routes->get('swoprmg/upgrade/list', 'SwOprMg::getSwUpgradeList');
+    $routes->get('swoprmg/up/moniter', 'SwOprMg::getSwUpdateList');
+    $routes->get('swoprmg/up/moniter/default', 'SwOprMg::getSwUpdateListA');
+    //$routes->get('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::getSwOprMg/$1/$2/$3');
     $routes->delete('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::deleteSwOprMg/$1/$2/$3');
-    $routes->get('swoprmg/idcheck/(:any)/(:num)/(:num)', 'SwOprMg::getSwIdCheck/$1/$2/$3');
+    $routes->get('swoprmg/idcheck/(:any)/(:any)/(:any)', 'SwOprMg::getSwIdCheck/$1/$2/$3');
     $routes->post('swoprmg/', 'SwOprMg::insertSwOprMg');
+
+    //rccmd
+    $routes->post('rccmd', 'RcCmd::insertRcCmd');
+
+
   });
   //$routes->resource('swgroup');
 

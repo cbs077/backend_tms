@@ -8,17 +8,19 @@ class SwGroupModel extends Model
     protected $primaryKey = ['VAN_ID'. 'SW_GROUP_ID'];
     protected $allowedFields = ['VAN_ID', 'SW_GROUP_ID', 'SW_GROUP_NM', 'DESCRIPTION', 'REG_DT', 'REG_USER', 'UPDATE_DT'];
 
-    public function getSwGroupMgList($cur_page, $page_count, $sw_group_id, $sw_group_nm)    
+    public function getSwGroupMgList($cur_page, $page_count, $van_id, $sw_group_id, $sw_group_nm)    
     {        
-        $sql = 'SELECT * FROM (SELECT * FROM TW_SW_GROUP
+        $sql = 'SELECT *, a.REG_DT as REG_DT FROM (SELECT * FROM TW_SW_GROUP
                 Where CASE WHEN :sw_group_id: = "" THEN true ELSE sw_group_id=:sw_group_id: END
+                and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
                 and CASE WHEN :sw_group_nm: = "" THEN true ELSE sw_group_nm=:sw_group_nm: END) a
                 left join TW_VAN_INFO b on a.van_id = b.van_id
-                ORDER BY a.sw_group_id DESC        
+                ORDER BY a.REG_DT DESC        
                 LIMIT :page_count: 
                 offset :offset:'; 
                 
         $results = $this->db->query($sql, [
+              'van_id' => $van_id,
               'sw_group_id' => $sw_group_id,
               'sw_group_nm' => $sw_group_nm,
               'page_count' => $page_count,
@@ -27,11 +29,13 @@ class SwGroupModel extends Model
 
         $count_sql = 'SELECT SQL_CALC_FOUND_ROWS * FROM (SELECT * FROM TW_SW_GROUP
             Where CASE WHEN :sw_group_id: = "" THEN true ELSE sw_group_id=:sw_group_id: END
+            and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
             and CASE WHEN :sw_group_nm: = "" THEN true ELSE sw_group_nm=:sw_group_nm: END) a
             left join TW_VAN_INFO b on a.van_id = b.van_id
             ORDER BY a.sw_group_id DESC';        
         
         $count_results = $this->db->query($count_sql, [
+            'van_id' => $van_id,
             'sw_group_id' => $sw_group_id,
             'sw_group_nm' => $sw_group_nm,
         ]);
@@ -77,13 +81,13 @@ class SwGroupModel extends Model
 
     public function getSwGroupIdCheck($van_id, $sw_group_id)   
     {        
-        $sql = 'SELECT count(*) as count FROM TW_SW_GROUP WHERE VAN_ID = :id: and SW_GROUP_ID = :sw_group_id:';
+        $sql = 'SELECT count(*) as count FROM TW_SW_GROUP WHERE VAN_ID = :van_id: and SW_GROUP_ID = :sw_group_id:';
         $results = $this->db->query($sql, [
-            'id' => $van_id,
+            'van_id' => $van_id,
             'sw_group_id' => $sw_group_id
         ]);
         
-        return $results->getResultArray();
+        return $results->getRow();
     }
 
     public function deleteSwGroupMg($van_id, $sw_group_id)    
