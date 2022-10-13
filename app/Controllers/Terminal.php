@@ -56,10 +56,16 @@ class Terminal extends ResourceController
       if (isset($searchData) && isset($searchData['cat_model_id'])) {
         $cat_model_id = $searchData['cat_model_id'];
       }
-      log_message('info', json_encode($sw_group_id)); 
+
+      $status = "";
+      if (isset($searchData) && isset($searchData['status'])) {
+        $status = $searchData['status'];
+      }
+
+      log_message('info', json_encode($status)); 
       // Get data 
       $model = new TerminalModel();
-      $data = $model->getTerminalList($page ,$page_count ,$van_id, $sw_group_id, $sw_version, $cat_serial_no, $cat_model_id);
+      $data = $model->getTerminalList($page ,$page_count ,$van_id, $sw_group_id, $sw_version, $cat_serial_no, $cat_model_id, $status);
       return $this->respond($data); 
     }
 
@@ -118,20 +124,30 @@ class Terminal extends ResourceController
     }
 
     // update
-    public function updateTerminal($id = null){
+    public function updateTerminal(){
         log_message('info','updateTerminal'); 
         $model = new TerminalModel();
 
         $van_id = $this->request->getVar('VAN_ID');
         $cat_serial_no = $this->request->getVar('CAT_SERIAL_NO');
+
         $cat_model_id = $this->request->getVar('CAT_MODEL_ID');
+        if (!isset($cat_model_id)) {
+          $cat_model_id = "";
+        }
+
+        log_message('info','updateTerminal'); 
         $sw_group_id = $this->request->getVar('SW_GROUP_ID');
+        if (!isset($sw_group_id)) {
+          $sw_group_id = "";
+        }
+
         $status = $this->request->getVar('STATUS');
         if (!isset($status)) {
           $status = "";
         }
 
-        log_message('info',"updateTerminal".json_encode($status)); 
+        log_message('info',"updateTerminal11".json_encode($sw_group_id)); 
         $model->updateTerminal($van_id, $cat_serial_no, $cat_model_id, $sw_group_id, $status);
         $response = [
           'status'   => 200,
@@ -144,9 +160,10 @@ class Terminal extends ResourceController
     }
 
     // delete
-    public function deleteTerminal($id = null){
+    public function deleteTerminal(){
         $model = new TerminalModel();       
         
+        log_message('info',"deleteTerminal"); 
         $cat_serial_no = $this->request->getVar('CAT_SERIAL_NO');
         $van_id = $this->request->getVar('VAN_ID');
         $data = $model->where('CAT_SERIAL_NO', $cat_serial_no)->where('VAN_ID', $van_id)->find();

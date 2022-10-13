@@ -15,7 +15,7 @@ class SwGroupModel extends Model
                 and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
                 and CASE WHEN :sw_group_nm: = "" THEN true ELSE sw_group_nm=:sw_group_nm: END) a
                 left join TW_VAN_INFO b on a.van_id = b.van_id
-                ORDER BY a.REG_DT DESC        
+                ORDER BY a.van_id, a.REG_DT DESC        
                 LIMIT :page_count: 
                 offset :offset:'; 
                 
@@ -32,7 +32,7 @@ class SwGroupModel extends Model
             and CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END
             and CASE WHEN :sw_group_nm: = "" THEN true ELSE sw_group_nm=:sw_group_nm: END) a
             left join TW_VAN_INFO b on a.van_id = b.van_id
-            ORDER BY a.sw_group_id DESC';        
+            ORDER BY a.van_id DESC';        
         
         $count_results = $this->db->query($count_sql, [
             'van_id' => $van_id,

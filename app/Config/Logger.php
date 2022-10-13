@@ -37,7 +37,7 @@ class Logger extends BaseConfig
      *
      * @var array|int
      */
-    public $threshold = 8;
+    public $threshold = 9;
 
     /**
      * --------------------------------------------------------------------------
@@ -112,7 +112,7 @@ class Logger extends BaseConfig
              * IMPORTANT: This MUST be an integer (no quotes) and you MUST use octal
              * integer notation (i.e. 0700, 0644, etc.)
              */
-            'filePermissions' => 0644,
+            'filePermissions' => 0777,
 
             /*
              * Logging Directory Path

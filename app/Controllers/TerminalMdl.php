@@ -37,7 +37,6 @@ class TerminalMdl extends ResourceController
         $cat_model_nm = $searchData['cat_model_nm'];
       }
   
-      // Get data 
       $model = new TerminalMdlModel();
       $data = $model->getTerminalMdlList($page ,$page_count, $van_id ,$cat_model_id, $cat_model_nm);
       return $this->respond($data);  

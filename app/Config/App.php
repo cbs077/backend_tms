@@ -23,7 +23,7 @@ class App extends BaseConfig
      *
      * @var string
      */
-    public $baseURL = 'http://localhost:8080/';
+    public $baseURL = 'https://localhost';
 
     /**
      * --------------------------------------------------------------------------
@@ -36,7 +36,7 @@ class App extends BaseConfig
      *
      * @var string
      */
-    public $indexPage = 'index.php';
+    public $indexPage = 'index.php?';
 
     /**
      * --------------------------------------------------------------------------
@@ -258,7 +258,7 @@ class App extends BaseConfig
      * @deprecated use Config\Cookie::$domain property instead.
      */
     //public $cookieDomain = 'http://35.175.160.167:8080';
-    public $cookieDomain = 'http://tms-test-server.p-e.kr:8080';
+    public $cookieDomain = '';
 
     /**
      * --------------------------------------------------------------------------

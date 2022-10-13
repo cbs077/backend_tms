@@ -12,7 +12,7 @@ class SwOprMgModel extends Model
     public function getSwOprMgList($cur_page, $page_count, $van_id, $sw_group_id, $sw_version)    ///WHERE CASE WHEN van_id<800 THEN  :van_id: ELSE END Where a.van_id = :sw_group_id: and a.sw_version = :sw_version:'
     {        
         $sql = 'SELECT *, b.REG_DT as REG_DT FROM 
-                    (SELECT van_id, sw_group_id, max(SW_VERSION) as sw_version FROM TW_SW_VERSION 
+                    (SELECT VAN_ID, SW_GROUP_ID, max(SW_VERSION) as SW_VERSION FROM TW_SW_VERSION 
                         Where CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END 
                         GROUP BY van_id, sw_group_id
                     ) a
@@ -33,7 +33,7 @@ class SwOprMgModel extends Model
         ]);
 
         $count_sql = 'SELECT * FROM 
-            (SELECT van_id, sw_group_id, max(SW_VERSION) as sw_version FROM TW_SW_VERSION 
+            (SELECT VAN_ID, SW_GROUP_ID, max(SW_VERSION) as SW_VERSION FROM TW_SW_VERSION 
             Where CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END GROUP BY van_id, sw_group_id) a
             left join TW_SW_VERSION b on a.van_id = b.van_id and a.sw_group_id = b.sw_group_id and a.sw_version = b.sw_version
             left join TW_VAN_INFO c on a.van_id = c.van_id 
@@ -95,24 +95,28 @@ class SwOprMgModel extends Model
         return $return;
     }
 
+    // 모니터링
+    // TW_CAT_LIST를 cat_serial_no, sw_group_id를 이용
+    // van 상관없이
     public function getSwUpdateList($cur_page, $page_count, $van_id, $gubun_code, $sw_group_id, $sw_version, $response, $cat_serial_no, $search_start_dt, $search_end_dt)  
     {        
-        $sql = 'SELECT *, a.reg_dt as REG_DT, a.SW_GROUP_ID as SW_GROUP_ID, a.SW_VERSION as SW_VERSION FROM 
-                    (SELECT * FROM TS_CATREQ_LOG 
-                        Where CASE WHEN :van_id: = "" THEN true ELSE van_id=:van_id: END 
+        $sql = 'SELECT *, a.reg_dt as REG_DT, c.sw_group_nm as SW_GROUP_NM FROM 
+                    (SELECT b.van_id as van_id, a.cat_serial_no as CAT_SERIAL_NO, a.req_id as req_id, a.gubun as GUBUN, a.result_code as RESULT_CODE, a.old_sw_version as OLD_SW_VERSION, a.sw_version as SW_VERSION, b.sw_group_id as SW_GROUP_ID, a.reg_dt as REG_DT FROM TS_CATREQ_LOG a
+                        left join TW_CAT_LIST b on a.cat_serial_no = b.cat_serial_no    
+                        Where CASE WHEN :van_id: = "" THEN true ELSE b.van_id=:van_id: END 
                         and CASE WHEN :gubun_code: = "" THEN true ELSE gubun=:gubun_code: END 
-                        and CASE WHEN :sw_group_id: = "" THEN true ELSE sw_group_id=:sw_group_id: END 
-                        and CASE WHEN :sw_version: = "" THEN true ELSE sw_version!=:sw_version: END
+                        and CASE WHEN :sw_group_id: = "" THEN true ELSE b.sw_group_id=:sw_group_id: END 
+                        and CASE WHEN :sw_version: = "" THEN true ELSE a.sw_version!=:sw_version: END
                         and CASE WHEN :response: = "" THEN  result_code=:response: ELSE result_code!="" END
-                        and CASE WHEN :cat_serial_no: = "" THEN true ELSE cat_serial_no=:cat_serial_no: END   
-                        and CASE WHEN :search_start_dt: = "" THEN true ELSE reg_dt>:search_start_dt: END
-                        and CASE WHEN :search_end_dt: = "" THEN true ELSE reg_dt<DATE_ADD(:search_end_dt:, INTERVAL 1 DAY) END   
-                    ) a
-                left join TW_VAN_INFO b on a.van_id = b.van_id 
-                left join TW_SW_GROUP c on a.van_id = c.van_id and a.sw_group_id = c.sw_group_id
+                        and CASE WHEN :cat_serial_no: = "" THEN true ELSE a.cat_serial_no=:cat_serial_no: END   
+                        and CASE WHEN :search_start_dt: = "" THEN true ELSE a.reg_dt>:search_start_dt: END
+                        and CASE WHEN :search_end_dt: = "" THEN true ELSE a.reg_dt<DATE_ADD(:search_end_dt:, INTERVAL 1 DAY) END                      
+                    ) a  
+                left join TW_VAN_INFO b on a.van_id = b.van_id     
+                left join TW_SW_GROUP c on a.SW_GROUP_ID = c.sw_group_id
                 ORDER BY a.req_id DESC
                 LIMIT :page_count: 
-                offset :offset:'; 
+                offset :offset:';              
 
         $results = $this->db->query($sql, [
               'van_id' => $van_id,

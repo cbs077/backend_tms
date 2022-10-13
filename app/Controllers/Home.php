@@ -17,6 +17,7 @@ class Home extends BaseController
         log_message('info', 'Some variable did not contain a value.');
         log_message('error','ok'); 
         #return view('welcome_message');
+        //echo "aa";
         return view('frontend/index.html');
     }
 
@@ -82,21 +83,6 @@ class Home extends BaseController
             $authenticatePassword = password_verify($password, $pass);
             
             if($authenticatePassword){
-                //세션
-                // $ses_data = [
-                //     'user_id' => $data['USER_ID'],
-                //     'user_name' => $data['USER_NM'],
-                //     'van_id' => $data['COMP_ID'],
-                //     'isLoggedIn' => 'true'
-                // ];
-                // $res = ["user_id" => $data['USER_ID'], "van_id" => $data['COMP_ID']];
-
-                
-                // log_message('debug', json_encode($res)); 
-                // log_message('debug', json_encode($ses_data)); 
-                // $session->set($ses_data);
-
-
                 $issuedAt = time();
                 $expirationTime = $issuedAt + 6000;  // jwt valid for 60 seconds from the issued time
                 $payload = array(
@@ -122,7 +108,7 @@ class Home extends BaseController
                   ];
                 return $this->respondCreated($response);            
             }else{
-                $session->setFlashdata('msg', 'Password is incorrect.');
+                //$session->setFlashdata('msg', 'Password is incorrect.');
                 $response = [
                     'status'   => 405,
                     'error'    => null,
@@ -135,7 +121,7 @@ class Home extends BaseController
 
         }else{
             log_message('info', "fail");
-            $session->setFlashdata('msg', 'Email does not exist.');
+            //$session->setFlashdata('msg', 'Email does not exist.');
             $response = [
                 'status'   => 405,
                 'error'    => null,
@@ -156,10 +142,6 @@ class Home extends BaseController
         ];
         $session->set($ses_data);
         log_message('info', "logout");
-        // $session->remove('id');
-        // $session->remove('name');
-        // $session->remove('name');
-
         $val = $session->get('isLoggedIn');
         log_message('info', "logout.session:".$val); 
 
@@ -176,7 +158,7 @@ class Home extends BaseController
     public function upload()
     {
         $validationRule = [
-            'swfile' => 'uploaded[swfile]|max_size[swfile,1024]',
+            'swfile' => 'uploaded[swfile]|max_size[swfile,5000]',
             // 'userfile' => [
             //     'label' => 'Image File',
             //     'rules' => 'uploaded[userfile]'
@@ -186,6 +168,19 @@ class Home extends BaseController
             //         //. '|max_dims[userfile,1024,768]',
             // ],
         ];
+
+        if (! $this->validate($validationRule)) {
+            $data = ['errors' => $this->validator->getErrors()];
+
+            $response = [
+                'status'   => 400,
+                'error'    => null,
+                'messages' => [
+                    'success' => 'upload fail'
+                ]
+              ];
+            return $this->respondCreated($response);
+        }
 
         $img = $this->request->getFile('swfile');
 

@@ -31,49 +31,41 @@ $routes->setAutoRoute(true);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-//$routes->get('/', 'Home::index');
-  //$routes->resource('employee');
-  //$routes->resource('user');
-  // Filter on route group
-  // $routes->group("admin", ["filter" => "myauth"] , function($routes){
-
-  //   $routes->post("sales", "AdminController::sales");
-  //   $routes->put("transactions", "ApiController::transactions");
-  // });
 
   //common
-  $routes->group("/", function($routes){  // 개발용 authGuard
+  $routes->group("/api", function($routes){  // 개발용 authGuard
     $routes->post('signup', 'Home::signup');
+    $routes->post('login/', 'Home::loginAuth');
     $routes->get('login/', 'Home::loginAuth');
     $routes->get('logout/', 'Home::logout');
     $routes->post('upload', 'Home::upload');
   });
 
   //$routes->group("/", function($routes){  // 개발용 authGuard
-  $routes->group("/", ["filter" => "authGuard"] , function($routes){
+  $routes->group("/api", ["filter" => "authGuard"] , function($routes){
     // user
     $routes->get('user/idcheck', 'User::getUserIdCheck');
     $routes->get('getUserMgList', 'User::getUserMgList');
     $routes->get('getUserInfo/(:any)', 'User::getUserInfo/$1');
-    $routes->put('updateUserInfo', 'User::updateUserInfo');
-    $routes->put('updatepwd/', 'User::updatePwd');
-    $routes->post('user/', 'User::insertUserMg');
+    $routes->post('updateUserInfo', 'User::updateUserInfo');
+    $routes->post('updatepwd', 'User::updatePwd');
+    $routes->post('user', 'User::insertUserMg');
 
     // van
     $routes->get('van/list', 'Van::getVanMgList');
     $routes->get('van', 'Van::getVanMgInfo');
     $routes->get('van/(:num)', 'Van::getVanMg/$1');
     $routes->get('van/idcheck/(:num)', 'Van::getVanIdCheck/$1');
-    $routes->post('van/', 'Van::insertVanMg');
-    $routes->put('van/', 'Van::updateVanMg');
+    $routes->post('van', 'Van::insertVanMg');
+    $routes->post('modify/van', 'Van::updateVanMg');
 
     // terminal
     $routes->get('terminal/list', 'Terminal::getTerminalList');
     $routes->get('terminal/(:num)/(:num)', 'Terminal::getTerminal/$1/$2');
     $routes->get('terminal/idcheck/(:any)/(:any)', 'Terminal::getCatIdCheck/$1/$2');
-    $routes->post('terminal/', 'Terminal::insertTerminal');
-    $routes->put('terminal/', 'Terminal::updateTerminal');
-    $routes->delete('terminal/', 'Terminal::deleteTerminal');
+    $routes->post('terminal', 'Terminal::insertTerminal');
+    $routes->post('modify/terminal', 'Terminal::updateTerminal');
+    $routes->post('remove/terminal', 'Terminal::deleteTerminal');
 
     // terminal_stat  
     $routes->get('terminal/stat/list', 'TerminalStat::getTerminalUseInfoList');
@@ -83,24 +75,23 @@ $routes->setAutoRoute(true);
     $routes->get('reghist/list', 'RegHist::getTerminalRegHist');
     $routes->get('reghist/(:num)/(:num)', 'RegHist::getTerminal/$1/$2');
     $routes->get('reghist/idcheck/(:num)/(:num)', 'RegHist::getCatIdCheck/$1/$2');
-    $routes->post('reghist/', 'RegHist::insertRegHist');
-    $routes->delete('reghist/', 'RegHist::deleteRegHist');
+    $routes->post('reghist', 'RegHist::insertRegHist');
+    $routes->post('remove/reghist', 'RegHist::deleteRegHist');
 
     // terminalmdl
     $routes->get('terminal_mdl/list', 'TerminalMdl::getTerminalMdlList');
-  // $routes->get('terminal_mdl/info', 'TerminalMdl::getTerminalMdlInfo');
     $routes->get('terminal_mdl', 'TerminalMdl::getTerminalMdl');
     $routes->get('terminal_mdl/idcheck/(:any)/(:any)', 'TerminalMdl::getMdlIdCheck/$1/$2');
-    $routes->post('terminal_mdl/', 'TerminalMdl::insertTerminalMdl');
-    $routes->put('terminal_mdl/', 'TerminalMdl::updateTerminalMdl');
+    $routes->post('terminal_mdl', 'TerminalMdl::insertTerminalMdl');
+    $routes->post('modify/terminal_mdl', 'TerminalMdl::updateTerminalMdl');
 
     //swgroup SwGroup contollrer 이름 관계있음.
     $routes->get('swgroup/list', 'SwGroup::getSwGroupMgList');
     $routes->get('swgroup', 'SwGroup::getSwGroupMg');
     $routes->get('swgroup/idcheck/(:any)/(:any)', 'SwGroup::getSwGroupIdCheck/$1/$2');
-    $routes->post('swgroup/', 'SwGroup::insertSwGroupMg');
-    $routes->put('swgroup/', 'SwGroup::updateSwGroupMg/');
-    $routes->delete('swgroup/', 'SwGroup::deleteTerminal');
+    $routes->post('swgroup', 'SwGroup::insertSwGroupMg');
+    $routes->post('modify/swgroup', 'SwGroup::updateSwGroupMg');
+    $routes->post('remove/swgroup', 'SwGroup::deleteTerminal');
 
     //swoprmg 
     $routes->get('swoprmg/list', 'SwOprMg::getSwOprMgList');
@@ -108,9 +99,9 @@ $routes->setAutoRoute(true);
     $routes->get('swoprmg/up/moniter', 'SwOprMg::getSwUpdateList');
     $routes->get('swoprmg/up/moniter/default', 'SwOprMg::getSwUpdateListA');
     //$routes->get('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::getSwOprMg/$1/$2/$3');
-    $routes->delete('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::deleteSwOprMg/$1/$2/$3');
+    $routes->post('swoprmg/(:any)/(:num)/(:num)', 'SwOprMg::deleteSwOprMg/$1/$2/$3');
     $routes->get('swoprmg/idcheck/(:any)/(:any)/(:any)', 'SwOprMg::getSwIdCheck/$1/$2/$3');
-    $routes->post('swoprmg/', 'SwOprMg::insertSwOprMg');
+    $routes->post('swoprmg', 'SwOprMg::insertSwOprMg');
 
     //rccmd
     $routes->post('rccmd', 'RcCmd::insertRcCmd');
